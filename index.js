@@ -1,14 +1,25 @@
-const Discord = require('discord.js');
-const axios = require('axios');
-const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 require('dotenv').config();
 
-client.once('ready', () => {
+const { Client, MessageActionRow, MessageSelectMenu, MessageEmbed } = require('discord.js');
+const axios = require('axios');
+const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
+const redis = require('redis');
+const cache = redis.createClient({ url: process.env.REDIS_URL || REDIS_URL }); // this creates a new client
+
+
+client.once('ready', async () => {
+    // await cache.connect();
     getGas();
+    //await cache.set("test", new Map().toe)
+    //console.log(await cache.get("test"))
 });
 
 let gasPrices = {};
-let alerts = new Map()
+let alerts = new Map();
+
+addTime = (time, minutes) => {
+    return time.setMinutes(time.getMinutes() + minutes);
+}
 
 getGas = () => {
     let req = `https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=${process.env.ETH_GAS_KEY}`;
@@ -16,47 +27,57 @@ getGas = () => {
         gasPrices = res.data.result;
         client.user.setActivity(`⚡️${gasPrices.FastGasPrice} |🚶‍♀️${gasPrices.ProposeGasPrice} |🐢${gasPrices.SafeGasPrice}`, { type: 'WATCHING' });
         checkAlerts();
+    }).catch(err => {
+        console.log(err.message);
     })
 }
 
 checkAlerts = () => {
-    alerts.forEach((amounts, author) => {
-        // console.log(amounts);
-        amounts.forEach((amount, index) => {
-            if (amount >= gasPrices.FastGasPrice) {
-                author.send(`Gas price 目前低於 ${gasPrices.FastGasPrice} gwei，請把握時機`);
-                let newAlertList = [...alerts.get(author).slice(0, index), ...alerts.get(author).slice(index + 1)];
-                alerts.set(author, newAlertList);
+
+    alerts.forEach((alertInfo, key) => {
+        console.log(alertInfo.nextExecutionTime, Date.now())
+        if (alertInfo.nextExecutionTime === null || alertInfo.nextExecutionTime < Date.now()) {
+            if (alertInfo.lowerThan >= gasPrices.FastGasPrice) {
+                alertInfo.nextExecutionTime = addTime(new Date(), parseInt(process.env.ALERT_INTERVAL_MIN));
+                alertInfo.channel.send(`<@${alertInfo.toUser.id}> Gas fee 目前為 ${gasPrices.FastGasPrice} gwei，低於您設定的 ${alertInfo.lowerThan} gwei，請把握時機。`);
             }
-        })
+        }
     })
 }
 
-setInterval(getGas, 5 * 1000);
+client.on('interactionCreate', async interaction => {
+    try {
+        if (interaction.isCommand() && interaction.commandName === 'alert') {
+            const lowerThan = interaction.options.getInteger('gwei');
+            let alertInfo = { channel: interaction.channel, toUser: interaction.user, nextExecutionTime: null, lowerThan };
 
-client.on('messageCreate', message => {
-    const prefix = '!alert';
-    if (message.content.startsWith(prefix)) {
-        let args = message.content.slice(prefix.length + 1).trim().split(' ');
-        if (args[0] === '') args = args.splice(0, 0);
-        if (args.length === 1) {
-            let amount = parseInt(args[0]) || 0;
-            if (amount === 0) {
-                message.channel.send(`!alert 後方需為數字(欲追蹤 gwei價格)`);
-                return;
-            }
-            let user = message.author;
-            let name = message.member.nickname ? message.member.nickname : message.member.user.username;
-            message.channel.send(`Gas price 低於 ${amount} gwei時，將私訊通知${name}`);
-            if (!alerts.has(user)) {
-                alerts.set(user, [amount]);
+            if (!alerts.has(interaction.user.id)) {
+                alerts.set(interaction.user.id, alertInfo);
             } else {
-                let newAlertList = alerts.get(user);
-                newAlertList.push(amount);
-                alerts.set(user, newAlertList);
+                alerts.set(interaction.user.id, alertInfo);
             }
+
+            const embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setTitle('設定通知')
+                .setDescription(`當Gas fee低於 ${lowerThan} 通知 ${interaction.user.username}`);
+            interaction.reply({ embeds: [embed] });
         }
+
+        if (interaction.isCommand() && interaction.commandName === 'cancel') {
+            alerts.delete(interaction.user.id);
+
+            const embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setTitle('設定通知')
+                .setDescription(`取消通知 ${interaction.user.username}`);
+            interaction.reply({ embeds: [embed] });
+        }
+    } catch (err) {
+        console.log(err.message);
     }
+
 });
 
+setInterval(getGas, 5 * 1000);
 client.login(process.env.DISCORD_TOKEN);
