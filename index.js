@@ -51,6 +51,8 @@ client.on('interactionCreate', async interaction => {
             const lowerThan = interaction.options.getInteger('gwei');
             let alertInfo = { channel: interaction.channel, toUser: interaction.user, nextExecutionTime: null, lowerThan };
 
+            await interaction.deferReply();
+
             if (!alerts.has(interaction.user.id)) {
                 alerts.set(interaction.user.id, alertInfo);
             } else {
@@ -61,17 +63,18 @@ client.on('interactionCreate', async interaction => {
                 .setColor('#0099ff')
                 .setTitle('設定通知')
                 .setDescription(`當Gas fee低於 ${lowerThan} 通知 ${interaction.user.username}`);
-            interaction.reply({ embeds: [embed] });
+            interaction.editReply({ embeds: [embed] });
         }
 
         if (interaction.isCommand() && interaction.commandName === 'cancel') {
+            await interaction.deferReply();
             alerts.delete(interaction.user.id);
 
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setTitle('設定通知')
                 .setDescription(`取消通知 ${interaction.user.username}`);
-            interaction.reply({ embeds: [embed] });
+            interaction.editReply({ embeds: [embed] });
         }
     } catch (err) {
         console.log(err.message);
