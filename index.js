@@ -35,7 +35,6 @@ getGas = () => {
 checkAlerts = () => {
 
     alerts.forEach((alertInfo, key) => {
-        console.log(alertInfo.nextExecutionTime, Date.now())
         if (alertInfo.nextExecutionTime === null || alertInfo.nextExecutionTime < Date.now()) {
             if (alertInfo.lowerThan >= gasPrices.FastGasPrice) {
                 alertInfo.nextExecutionTime = addTime(new Date(), parseInt(process.env.ALERT_INTERVAL_MIN));
