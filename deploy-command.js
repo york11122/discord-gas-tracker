@@ -7,7 +7,14 @@ const commands = [
     new SlashCommandBuilder().setName('alert').setDescription('gas fee 追蹤提醒').addIntegerOption(option => option.setName('gwei')
         .setRequired(true)
         .setDescription('低於此數值提醒')),
-    new SlashCommandBuilder().setName('cancel').setDescription('gas fee 取消提醒')
+    new SlashCommandBuilder().setName('cancel_alert').setDescription('gas fee 取消提醒'),
+    new SlashCommandBuilder().setName('track').setDescription('追蹤用戶').addStringOption(option => option.setName('address')
+        .setRequired(true)
+        .setDescription('用戶錢包地址')),
+    new SlashCommandBuilder().setName('cancel_track').setDescription('取消追蹤用戶').addStringOption(option => option.setName('address')
+        .setRequired(true)
+        .setDescription('用戶錢包地址')),
+    new SlashCommandBuilder().setName('list_track').setDescription('列出當前追蹤用戶')
 ]
     .map(command => command.toJSON());
 
