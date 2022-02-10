@@ -14,7 +14,10 @@ const commands = [
     new SlashCommandBuilder().setName('cancel_track').setDescription('取消追蹤用戶').addStringOption(option => option.setName('address')
         .setRequired(true)
         .setDescription('用戶錢包地址')),
-    new SlashCommandBuilder().setName('list_track').setDescription('列出當前追蹤用戶')
+    new SlashCommandBuilder().setName('list_track').setDescription('列出當前追蹤用戶'),
+    new SlashCommandBuilder().setName('get_nft').setDescription('列出用戶所擁有NFT').addStringOption(option => option.setName('address')
+        .setRequired(true)
+        .setDescription('用戶錢包地址')),
 ]
     .map(command => command.toJSON());
 

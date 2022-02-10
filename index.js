@@ -144,6 +144,25 @@ client.on('interactionCreate', async interaction => {
             interaction.editReply({ embeds: [embed] });
         }
 
+        if (interaction.isCommand() && interaction.commandName === 'get_nfts') {
+            const userAddress = interaction.options.getString('address');
+            await interaction.deferReply();
+            const nfts = await db.collection("tracking-user-nft-owned").find({
+                userAddress: userAddress,
+            }).toArray();
+
+            let nftsString = '';
+            for (let nft of nfts) {
+                nftsString = nftsString + "\n" + `${nft.nft} ${nft.isSold ? "(已賣出)" : "(未賣出)"}`
+            }
+
+            const embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setTitle(`用戶擁有nfts: ${userAddress}`)
+                .setDescription(`${nftsString}`);
+            interaction.editReply({ embeds: [embed] });
+        }
+
         if (interaction.isCommand() && interaction.commandName === 'cancel_track') {
             const userAddress = interaction.options.getString('address');
             await interaction.deferReply();
@@ -155,6 +174,7 @@ client.on('interactionCreate', async interaction => {
                 .setDescription(`取消追蹤用戶: ${userAddress}`);
             interaction.editReply({ embeds: [embed] });
         }
+
 
 
         if (interaction.isCommand() && interaction.commandName === 'list_track') {
