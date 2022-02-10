@@ -31,7 +31,8 @@ track = async (trackRecord, db) => {
                         const nft = await db.collection("tracking-user-nft-owned").findOne({
                             userAddress: trackRecord.userAddress,
                             contract_address: item.nft.contract_address,
-                            token_id: item.nft.token_id
+                            token_id: item.nft.token_id,
+                            isSold: false
                         })
                         if (nft) {
                             listToNodify.push({
@@ -44,11 +45,12 @@ track = async (trackRecord, db) => {
                                 nft: `https://opensea.io/assets/${item.nft.contract_address}/${item.nft.token_id}`
                             })
 
-                            await db.collection("tracking-user-nft-owned").deleteOne({
+                            await db.collection("tracking-user-nft-owned").updateOne({
                                 userAddress: trackRecord.userAddress,
                                 contract_address: item.nft.contract_address,
                                 token_id: item.nft.token_id
-                            })
+                            }, { $set: { isSold: true } }
+                            )
                         }
                     }
                     else {
