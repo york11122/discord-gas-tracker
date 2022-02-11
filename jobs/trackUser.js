@@ -34,6 +34,7 @@ track = async (trackRecord, db) => {
                             token_id: item.nft.token_id,
                             isSold: false
                         })
+
                         if (nft) {
                             listToNodify.push({
                                 userAddress: trackRecord.userAddress,
@@ -51,6 +52,17 @@ track = async (trackRecord, db) => {
                                 token_id: item.nft.token_id
                             }, { $set: { isSold: true } }
                             )
+                        }
+                        else {
+                            listToNodify.push({
+                                userAddress: trackRecord.userAddress,
+                                type: 'sell',
+                                price_details: item.price_details,
+                                transaction_date: item.transaction_date,
+                                buy_price_details: "NA",
+                                profit: "NA",
+                                nft: `https://opensea.io/assets/${item.nft.contract_address}/${item.nft.token_id}`
+                            })
                         }
                     }
                     else {
