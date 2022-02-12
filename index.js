@@ -62,13 +62,17 @@ doTrack = async () => {
                         .setTitle(`${track.type.toUpperCase()}`)
                         .setURL(track.nft)
                         .setAuthor({ name: track.userAddress })
-                        .setThumbnail('https://logowik.com/content/uploads/images/opensea2699.jpg')
+                        .setThumbnail(track.img_url)
                         .addFields(
                             { name: 'Price', value: `${track.price_details.price}/${track.price_details.asset_type}` },
                         )
                         .setTimestamp(Date.parse(track.transaction_date))
 
+                    if (track.slug) {
+                        exampleEmbed.addField('Slug', track.slug, true)
+                    }
                     if (track.type === "sell") {
+
                         exampleEmbed.addField('Profit', `${track.profit}/${track.price_details.asset_type}`, true)
                         exampleEmbed.addField('Buying Price', `${track.buy_price_details.price}/${track.price_details.asset_type}`, true)
                         exampleEmbed.addField('Selling Price', `${track.price_details.price}/${track.price_details.asset_type}`, true)
@@ -163,20 +167,53 @@ client.on('interactionCreate', async interaction => {
             }).toArray();
 
             let nftsString = '';
-            let winTimes = 0;
             for (let nft of nfts) {
-                if (nft.isWin) {
-                    winTimes = winTimes + 1;
-                }
                 nftsString = nftsString + "\n" + `${nft.nft} ${nft.isSold ? `(已賣出 roi:${nft.roi}, isWin:${nft.isWin})` : "(未賣出)"}`
             }
 
-            const winRate = winTimes / nfts.length;
 
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
-                .setTitle(`(win rate: ${winRate}) / ${userAddress}`)
+                .setTitle(`${userAddress}`)
                 .setDescription(`${nftsString}`);
+            interaction.editReply({ embeds: [embed] });
+        }
+
+
+        if (interaction.isCommand() && interaction.commandName === 'winRate') {
+            const userAddress = interaction.options.getString('address');
+            await interaction.deferReply();
+            const nfts = await db.collection("tracking-user-nft-owned").find({
+                userAddress: userAddress,
+            }).toArray();
+
+            let winTimes = 0;
+            let sold_total = 0;
+            let unsold_winTimes = 0;
+            let unsold_total = 0;
+            for (let nft of nfts) {
+                if (nft.isSold) {
+                    if (nft.isWin) {
+                        winTimes = winTimes + 1;
+                    }
+                    sold_total = sold_total + 1;
+                }
+                else {
+                    const floorPrice = await getFloorPrice(nft.slug);
+                    if ((nft.price_details.price - floorPrice) > 0) {
+                        unsold_winTimes = unsold_winTimes + 1;
+                    }
+                    unsold_total = unsold_total + 1;
+                }
+            }
+
+            const winRate = winTimes / sold_total;
+            const unsold_winRate = unsold_winTimes / unsold_total;
+
+            const embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setTitle(`${userAddress}`)
+                .setDescription(`win rate: ${winRate} | unsold win rate: ${unsold_winRate} `);
             interaction.editReply({ embeds: [embed] });
         }
 
