@@ -1,7 +1,7 @@
 const axios = require('axios');
 require('dotenv').config();
 const _ = require("lodash");
-
+const randomip = require('random-ip');
 
 track = async (trackRecord, db) => {
     try {
@@ -132,9 +132,13 @@ track = async (trackRecord, db) => {
 }
 
 getContractDetail = async (contract_address) => {
+    const ipAddress = randomip("1.34.0.0", 16);
     try {
         const res = await axios.get(`https://api.opensea.io/api/v1/asset_contract/${contract_address}`, {
             headers: {
+                "Client-IP": ipAddress,
+                "REMOTE_ADDR": ipAddress,
+                "X-Forwarded-For": ipAddress,
                 "Accept": "application/json",
                 "User-Agent": "'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36';"
             }

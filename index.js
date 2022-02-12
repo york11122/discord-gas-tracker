@@ -40,7 +40,15 @@ getGas = () => {
 getFloorPrice = async (slug) => {
     try {
         const url = `https://api.opensea.io/collection/${slug}/stats`;
-        const response = await axios.get(url);
+        const response = await axios.get(url, {
+            headers: {
+                "Client-IP": ipAddress,
+                "REMOTE_ADDR": ipAddress,
+                "X-Forwarded-For": ipAddress,
+                "Accept": "application/json",
+                "User-Agent": "'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36';"
+            }
+        });
         return response.data.stats.floor_price;
     } catch (err) {
         console.log(err);
