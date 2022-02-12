@@ -4,7 +4,7 @@ const axios = require('axios');
 const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 const trackUser = require('./jobs/trackUser')
 const MongoClient = require("mongodb").MongoClient;
-
+const randomip = require('random-ip');
 const Mongoclient = new MongoClient(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -40,6 +40,7 @@ getGas = () => {
 getFloorPrice = async (slug) => {
     try {
         const url = `https://api.opensea.io/collection/${slug}/stats`;
+        const ipAddress = randomip("1.34.0.0", 16);
         const response = await axios.get(url, {
             headers: {
                 "Client-IP": ipAddress,
