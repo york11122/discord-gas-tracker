@@ -152,16 +152,23 @@ client.on('interactionCreate', async interaction => {
             }).toArray();
 
             let nftsString = '';
+            let winTimes = 0;
             for (let nft of nfts) {
-                nftsString = nftsString + "\n" + `${nft.nft} ${nft.isSold ? "(已賣出)" : "(未賣出)"}`
+                if (nft.isWin) {
+                    winTimes = winTimes + 1;
+                }
+                nftsString = nftsString + "\n" + `${nft.nft} ${nft.isSold ? `(已賣出 roi:${nft.roi}, isWin:${nft.isWin})` : "(未賣出)"}`
             }
+
+            const winRate = winTimes / nfts.length;
 
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
-                .setTitle(`用戶擁有nfts: ${userAddress}`)
+                .setTitle(`(win rate: ${winRate}) / ${userAddress}`)
                 .setDescription(`${nftsString}`);
             interaction.editReply({ embeds: [embed] });
         }
+
 
         if (interaction.isCommand() && interaction.commandName === 'cancel_track') {
             const userAddress = interaction.options.getString('address');
