@@ -26,8 +26,8 @@ track = async (trackRecord, db) => {
         let listToNodify = [];
         if (trackRecord.lastTranHash) {
             for (let item of trackData) {
-                const result = _.filter(opensea_res.data, (item) => {
-                    let obj = _.find(item.primary_asset_contracts, { address: item.nft.contract_address });
+                const result = _.filter(opensea_res.data, (r) => {
+                    let obj = _.find(r.primary_asset_contracts, { address: item.nft.contract_address });
                     if (obj) { return obj }
                 })
 
