@@ -188,7 +188,7 @@ client.on('interactionCreate', async interaction => {
         }
 
 
-        if (interaction.isCommand() && interaction.commandName === 'winRate') {
+        if (interaction.isCommand() && interaction.commandName === 'win_rate') {
             const userAddress = interaction.options.getString('address');
             await interaction.deferReply();
             const nfts = await db.collection("tracking-user-nft-owned").find({
