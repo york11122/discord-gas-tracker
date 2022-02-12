@@ -197,7 +197,7 @@ client.on('interactionCreate', async interaction => {
 
         if (interaction.isCommand() && interaction.commandName === 'list_track') {
             await interaction.deferReply();
-            const trackList = await db.collection("nft-tracking-list").find({}).toArray();
+            const trackList = await db.collection("nft-tracking-list").find({ channel: interaction.channel.id }).toArray();
             let trackListString = '';
             for (let track of trackList) {
                 trackListString = trackListString + "\n" + track.userAddress;
