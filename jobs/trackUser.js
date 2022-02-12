@@ -5,12 +5,19 @@ const _ = require("lodash");
 
 track = async (trackRecord, db) => {
     try {
-        let req = `https://api.nftport.xyz/v0/transactions/accounts/${trackRecord.userAddress}?chain=ethereum&type=sell&page_size=50&type=buy&type=list`;
-        const res = await axios.get(req, {
-            headers: {
-                "Authorization": process.env.NFTPORT_KEY
-            }
-        })
+
+        const [res, opensea_res] = await Promise.all([
+            axios.get(`https://api.nftport.xyz/v0/transactions/accounts/${trackRecord.userAddress}?chain=ethereum&type=sell&page_size=50&type=buy&type=list`, {
+                headers: {
+                    "Authorization": process.env.NFTPORT_KEY
+                }
+            }), axios.get(`https://api.opensea.io/api/v1/collections?offset=0&limit=300&asset_owner=${trackRecord.userAddress}`, {
+                headers: {
+                    "Accept": "application/json"
+                }
+            })])
+
+
         const trackData = res.data.transactions;
         if (trackData.length === 0) {
             return [];
@@ -19,6 +26,13 @@ track = async (trackRecord, db) => {
         let listToNodify = [];
         if (trackRecord.lastTranHash) {
             for (let item of trackData) {
+                const result = _.filter(opensea_res.data, (item) => {
+                    let obj = _.find(item.primary_asset_contracts, { address: item.nft.contract_address });
+                    if (obj) { return obj }
+                })
+
+                const slug = result[0].slug;
+                const img_url = result[0].image_url;
 
                 if (item.transaction_hash === trackRecord.lastTranHash) {
                     break;
@@ -47,6 +61,8 @@ track = async (trackRecord, db) => {
                                 buy_price_details: nft.price_details,
                                 profit,
                                 roi,
+                                slug,
+                                img_url,
                                 nft: `https://opensea.io/assets/${item.nft.contract_address}/${item.nft.token_id}`
                             })
 
@@ -65,6 +81,8 @@ track = async (trackRecord, db) => {
                                 transaction_date: item.transaction_date,
                                 buy_price_details: "NA",
                                 profit: "NA",
+                                slug,
+                                img_url,
                                 nft: `https://opensea.io/assets/${item.nft.contract_address}/${item.nft.token_id}`
                             })
                         }
@@ -73,6 +91,8 @@ track = async (trackRecord, db) => {
                         listToNodify.push({
                             userAddress: trackRecord.userAddress,
                             type: 'buy',
+                            slug,
+                            img_url,
                             transaction_date: item.transaction_date,
                             price_details: item.price_details,
                             nft: `https://opensea.io/assets/${item.nft.contract_address}/${item.nft.token_id}`
@@ -87,6 +107,8 @@ track = async (trackRecord, db) => {
                             contract_address: item.nft.contract_address,
                             token_id: item.nft.token_id,
                             contract_type: item.nft.contract_type,
+                            slug,
+                            img_url,
                             nft: `https://opensea.io/assets/${item.nft.contract_address}/${item.nft.token_id}`
                         })
                     }
@@ -97,6 +119,8 @@ track = async (trackRecord, db) => {
                         type: item.type,
                         price_details: item.price_details,
                         transaction_date: item.transaction_date,
+                        slug,
+                        img_url,
                         nft: `https://opensea.io/assets/${item.nft.contract_address}/${item.nft.token_id}`
                     })
                 }

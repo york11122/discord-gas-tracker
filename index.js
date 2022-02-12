@@ -37,6 +37,17 @@ getGas = () => {
     })
 }
 
+getFloorPrice = async (slug) => {
+    try {
+        const url = `https://api.opensea.io/collection/${slug}/stats`;
+        const response = await axios.get(url);
+        return response.data.stats.floor_price;
+    } catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
 doTrack = async () => {
     try {
         const trackingList = await db.collection("nft-tracking-list").find({}).toArray()
