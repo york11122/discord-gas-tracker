@@ -35,6 +35,9 @@ track = async (trackRecord, db) => {
                             isSold: false
                         })
 
+                        const profit = (item.price_details.price - nft.price_details.price).toFixed(4);
+                        const roi = profit * 0.875 / nft.price_details.price
+
                         if (nft) {
                             listToNodify.push({
                                 userAddress: trackRecord.userAddress,
@@ -42,7 +45,8 @@ track = async (trackRecord, db) => {
                                 price_details: item.price_details,
                                 transaction_date: item.transaction_date,
                                 buy_price_details: nft.price_details,
-                                profit: (item.price_details.price - nft.price_details.price).toFixed(4),
+                                profit,
+                                roi,
                                 nft: `https://opensea.io/assets/${item.nft.contract_address}/${item.nft.token_id}`
                             })
 
@@ -50,7 +54,7 @@ track = async (trackRecord, db) => {
                                 userAddress: trackRecord.userAddress,
                                 contract_address: item.nft.contract_address,
                                 token_id: item.nft.token_id
-                            }, { $set: { isSold: true } }
+                            }, { $set: { isSold: true, isWin: profit > 0 ? true : false, roi } }
                             )
                         }
                         else {
