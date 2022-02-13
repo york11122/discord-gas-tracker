@@ -15,7 +15,7 @@ track = async (trackRecord, db) => {
         if (trackData.length === 0) {
             return [];
         }
-        const lastTranHash = trackData[0].transaction_hash ? trackData[0].transaction_hash : trackData[0].transaction_date;
+        const lastTranHash = trackData[0].transaction_hash
 
         let listToNodify = [];
         if (trackRecord.lastTranHash) {
