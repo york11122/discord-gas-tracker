@@ -37,23 +37,25 @@ getGas = () => {
     })
 }
 
-getFloorPrice = async (slug) => {
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
+
+getFloorPrice = async (contract_address) => {
     try {
-        const url = `https://api.opensea.io/collection/${slug}/stats`;
-        const ipAddress = randomip("114.45.0.0", 16);
+        const url = `https://api.nftport.xyz/v0/transactions/stats/${contract_address}?chain=ethereum`;
         const response = await axios.get(url, {
             headers: {
-                "Client-IP": ipAddress,
-                "REMOTE_ADDR": ipAddress,
-                "X-Forwarded-For": ipAddress,
-                "Accept": "application/json",
-                "User-Agent": "'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36';"
+                "Authorization": process.env.NFTPORT_KEY,
             }
         });
-        return response.data.stats.floor_price;
+        await sleep(400);
+        return response.data.statistics.floor_price ? response.data.statistics.floor_price : -1;
     } catch (err) {
-        console.log(err);
-        return undefined;
+        console.log(contract_address)
+        return -1;
     }
 }
 
@@ -77,9 +79,6 @@ doTrack = async () => {
                         )
                         .setTimestamp(Date.parse(track.transaction_date))
 
-                    if (track.slug) {
-                        exampleEmbed.addField('Slug', track.slug, true)
-                    }
                     if (track.type === "sell") {
 
                         exampleEmbed.addField('Profit', `${track.profit}/${track.price_details.asset_type}`, true)
@@ -202,6 +201,7 @@ client.on('interactionCreate', async interaction => {
             let sold_total = 0;
             let unsold_winTimes = 0;
             let unsold_total = 0;
+            let tempFloorPrice = new Map();
             for (let nft of nfts) {
                 if (nft.isSold) {
                     if (nft.isWin) {
@@ -210,11 +210,17 @@ client.on('interactionCreate', async interaction => {
                     sold_total = sold_total + 1;
                 }
                 else {
-                    const floorPrice = await getFloorPrice(nft.slug);
-                    if ((nft.price_details.price - floorPrice) > 0) {
-                        unsold_winTimes = unsold_winTimes + 1;
+                    let floor_price = tempFloorPrice.get(nft.contract_address);
+                    if (!floor_price) {
+                        floor_price = await getFloorPrice(nft.contract_address);
+                        tempFloorPrice.set(nft.contract_address, floor_price);
                     }
-                    unsold_total = unsold_total + 1;
+                    if (floor_price >= 0) {
+                        if ((nft.price_details.price - floor_price) > 0) {
+                            unsold_winTimes = unsold_winTimes + 1;
+                        }
+                        unsold_total = unsold_total + 1;
+                    }
                 }
             }
 

@@ -77,15 +77,13 @@ track = async (trackRecord, db) => {
                     }
                     else {
 
-                        const contractDetail = await getContractDetail(item.nft.contract_address);
-                        const slug = contractDetail.collection.slug;
-                        const img_url = contractDetail.image_url;
+                        const contractDetail = await getContractDetail(item.nft);
+                        const img_url = contractDetail.nft.file_url;
                         listToNodify.push({
                             userAddress: trackRecord.userAddress,
                             type: 'buy',
                             transaction_date: item.transaction_date,
                             price_details: item.price_details,
-                            slug,
                             img_url,
                             nft: `https://opensea.io/assets/${item.nft.contract_address}/${item.nft.token_id}`
                         })
@@ -99,7 +97,6 @@ track = async (trackRecord, db) => {
                             contract_address: item.nft.contract_address,
                             token_id: item.nft.token_id,
                             contract_type: item.nft.contract_type,
-                            slug,
                             img_url,
                             nft: `https://opensea.io/assets/${item.nft.contract_address}/${item.nft.token_id}`
                         })
@@ -131,16 +128,16 @@ track = async (trackRecord, db) => {
 
 }
 
-getContractDetail = async (contract_address) => {
+getContractDetail = async (nft) => {
     const ipAddress = randomip("114.45.0.0", 16);
 
-    const res = await axios.get(`https://api.opensea.io/api/v1/asset_contract/${contract_address}`, {
+    const res = await axios.get(`https://api.nftport.xyz/v0/nfts/${nft.contract_address}/${nft.token_id}?chain=ethereum`, {
         headers: {
             "Client-IP": ipAddress,
             "REMOTE_ADDR": ipAddress,
             "X-Forwarded-For": ipAddress,
             "Accept": "application/json",
-            "referrer": "https://api.opensea.io/api/v1/asset_contract",
+            "Authorization": process.env.NFTPORT_KEY,
             "User-Agent": "'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36';"
         }
     })
