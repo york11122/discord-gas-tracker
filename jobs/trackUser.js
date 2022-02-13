@@ -148,4 +148,4 @@ getContractDetail = async (contract_address) => {
 
 }
 
-module.exports = { track }
+module.exports = { track, getContractDetail }

@@ -177,6 +177,8 @@ client.on('interactionCreate', async interaction => {
 
             let nftsString = '';
             for (let nft of nfts) {
+                const res = await trackUser.getContractDetail(nft.contract_address);
+                console.log(res)
                 nftsString = nftsString + "\n" + `${nft.nft} ${nft.isSold ? `(已賣出 roi:${nft.roi}, isWin:${nft.isWin})` : "(未賣出)"}`
             }
 
