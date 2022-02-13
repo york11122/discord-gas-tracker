@@ -132,7 +132,7 @@ track = async (trackRecord, db) => {
 }
 
 getContractDetail = async (contract_address) => {
-    const ipAddress = randomip("1.34.0.0", 16);
+    const ipAddress = randomip("114.45.0.0", 16);
 
     const res = await axios.get(`https://api.opensea.io/api/v1/asset_contract/${contract_address}`, {
         headers: {

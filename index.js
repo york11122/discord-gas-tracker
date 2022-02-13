@@ -40,7 +40,7 @@ getGas = () => {
 getFloorPrice = async (slug) => {
     try {
         const url = `https://api.opensea.io/collection/${slug}/stats`;
-        const ipAddress = randomip("1.34.0.0", 16);
+        const ipAddress = randomip("114.45.0.0", 16);
         const response = await axios.get(url, {
             headers: {
                 "Client-IP": ipAddress,
