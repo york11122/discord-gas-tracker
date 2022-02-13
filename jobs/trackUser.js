@@ -128,20 +128,26 @@ track = async (trackRecord, db) => {
 
 }
 
-getContractDetail = async (nft) => {
-    const ipAddress = randomip("114.45.0.0", 16);
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
-    const res = await axios.get(`https://api.nftport.xyz/v0/nfts/${nft.contract_address}/${nft.token_id}?chain=ethereum`, {
-        headers: {
-            "Client-IP": ipAddress,
-            "REMOTE_ADDR": ipAddress,
-            "X-Forwarded-For": ipAddress,
-            "Accept": "application/json",
-            "Authorization": process.env.NFTPORT_KEY,
-            "User-Agent": "'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36';"
-        }
-    })
-    return res.data
+getContractDetail = async (nft) => {
+    try {
+
+        const res = await axios.get(`https://api.nftport.xyz/v0/nfts/${nft.contract_address}/${nft.token_id}?chain=ethereum`, {
+            headers: {
+                "Authorization": process.env.NFTPORT_KEY,
+            }
+        })
+        await sleep(300)
+        return res.data
+    }
+    catch (err) {
+        console.log(err.message, 123)
+    }
 
 
 }

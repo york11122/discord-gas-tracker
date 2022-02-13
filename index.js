@@ -73,12 +73,14 @@ doTrack = async () => {
                         .setTitle(`${track.type.toUpperCase()}`)
                         .setURL(track.nft)
                         .setAuthor({ name: track.userAddress })
-                        .setThumbnail(track.img_url)
                         .addFields(
                             { name: 'Price', value: `${track.price_details.price}/${track.price_details.asset_type}` },
                         )
                         .setTimestamp(Date.parse(track.transaction_date))
 
+                    if (track.img_url && track.img_url.startsWith("https://")) {
+                        exampleEmbed.setThumbnail(track.img_url)
+                    }
                     if (track.type === "sell") {
 
                         exampleEmbed.addField('Profit', `${track.profit}/${track.price_details.asset_type}`, true)
@@ -175,12 +177,12 @@ client.on('interactionCreate', async interaction => {
             }).toArray();
 
             let nftsString = '';
+            let i = 0;
             for (let nft of nfts) {
-                const res = await trackUser.getContractDetail(nft.contract_address);
-                console.log(res)
+                if (i > 15) break;
+                i++;
                 nftsString = nftsString + "\n" + `${nft.nft} ${nft.isSold ? `(已賣出 roi:${nft.roi}, isWin:${nft.isWin})` : "(未賣出)"}`
             }
-
 
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
