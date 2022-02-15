@@ -5,7 +5,7 @@ const randomip = require('random-ip');
 
 track = async (trackRecord, db) => {
     try {
-        let req = `https://api.nftport.xyz/v0/transactions/accounts/${trackRecord.userAddress}?chain=ethereum&type=sell&page_size=50&type=buy&type=list`;
+        let req = `https://api.nftport.xyz/v0/transactions/accounts/${trackRecord.userAddress}?chain=ethereum&type=sell&page_size=50&type=buy`;
         const res = await axios.get(req, {
             headers: {
                 "Authorization": process.env.NFTPORT_KEY

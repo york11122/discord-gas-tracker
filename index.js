@@ -72,7 +72,7 @@ doTrack = async () => {
                         .setColor('#0099ff')
                         .setTitle(`${track.type.toUpperCase()}`)
                         .setURL(track.nft)
-                        .setAuthor({ name: track.userAddress })
+                        .setAuthor({ name: track.userAddress.slice(-5) })
                         .addFields(
                             { name: 'Price', value: `${track.price_details.price}/${track.price_details.asset_type}` },
                         )
