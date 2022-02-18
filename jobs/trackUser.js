@@ -20,10 +20,9 @@ track = async (trackRecord, db) => {
         let listToNodify = [];
         if (trackRecord.lastTranHash) {
 
-            const isNeedRun = lastTranHash !== trackRecord.lastTranHash
             // console.log(trackData)
             for (let item of trackData) {
-                if (!isNeedRun) {
+                if (item.transaction_hash === trackRecord.lastTranHash) {
                     break;
                 }
                 if (item.type === 'cancel_list') {
@@ -37,8 +36,6 @@ track = async (trackRecord, db) => {
                             token_id: item.nft.token_id,
                             isSold: false
                         })
-
-
 
                         if (nft) {
 
