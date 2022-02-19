@@ -178,7 +178,8 @@ client.on('interactionCreate', async interaction => {
             let nftsString = '';
             let i = 0;
             for (let nft of nfts) {
-                if (i >= nfts.length - 1 || i >= 15) {
+                nftsString = nftsString + "\n" + `[Item](${nft.nft} '${nft.nft}') ${nft.isSold ? `(已賣出)  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : "(未賣出)"}`
+                if (i == nfts.length - 1 || i >= 15) {
                     const embed = new MessageEmbed()
                         .setColor('#0099ff')
                         .setTitle(`${userAddress}`)
@@ -187,8 +188,7 @@ client.on('interactionCreate', async interaction => {
                     nftsString = '';
                     i = 0;
                 }
-                i++;
-                nftsString = nftsString + "\n" + `[Item](${nft.nft} '${nft.nft}') ${nft.isSold ? `(已賣出)  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : "(未賣出)"}`
+                i = i + 1;
             }
             interaction.reply("0")
         }
