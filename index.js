@@ -5,6 +5,7 @@ const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 const trackUser = require('./jobs/trackUser')
 const MongoClient = require("mongodb").MongoClient;
 const randomip = require('random-ip');
+const { over } = require('lodash');
 const Mongoclient = new MongoClient(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -177,6 +178,8 @@ client.on('interactionCreate', async interaction => {
             }).toArray();
             let nftsString = '';
             let i = 0;
+            let overall_count = 0;
+            let overall_sum = 0;
             for (let nft of nfts) {
                 nftsString = nftsString + "\n" + `[Item](${nft.nft} '${nft.nft}') ${nft.isSold ? `(已賣出)  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : "(未賣出)"}`
                 if (i == nfts.length - 1 || i >= 15) {
@@ -189,8 +192,14 @@ client.on('interactionCreate', async interaction => {
                     i = 0;
                 }
                 i = i + 1;
+
+                if (nft.isSold) {
+                    overall_count = overall_count + 1;
+                    overall_sum = overall_sum + nft.roi
+                }
             }
-            interaction.reply("0")
+            const overall_winrate = overall_sum / overall_count;
+            interaction.reply(overall_winrate.toFixed(2))
         }
 
 
