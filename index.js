@@ -171,24 +171,26 @@ client.on('interactionCreate', async interaction => {
 
         if (interaction.isCommand() && interaction.commandName === 'get_nfts') {
             const userAddress = interaction.options.getString('address');
-            await interaction.deferReply();
+            // await interaction.deferReply();
             const nfts = await db.collection("tracking-user-nft-owned").find({
                 userAddress: { $regex: new RegExp(userAddress, "i") },
             }).toArray();
-
             let nftsString = '';
             let i = 0;
             for (let nft of nfts) {
-                if (i > 15) break;
+                if (i >= nfts.length - 1 || i >= 15) {
+                    const embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setTitle(`${userAddress}`)
+                        .setDescription(`${nftsString}`);
+                    interaction.channel.send({ embeds: [embed] });
+                    nftsString = '';
+                    i = 0;
+                }
                 i++;
-                nftsString = nftsString + "\n" + `${nft.nft} ${nft.isSold ? `(已賣出 roi:${nft.roi}, isWin:${nft.isWin})` : "(未賣出)"}`
+                nftsString = nftsString + "\n" + `[Item](${nft.nft} '${nft.nft}') ${nft.isSold ? `(已賣出)  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : "(未賣出)"}`
             }
-
-            const embed = new MessageEmbed()
-                .setColor('#0099ff')
-                .setTitle(`${userAddress}`)
-                .setDescription(`${nftsString}`);
-            interaction.editReply({ embeds: [embed] });
+            interaction.reply("0")
         }
 
 
@@ -218,7 +220,7 @@ client.on('interactionCreate', async interaction => {
                         tempFloorPrice.set(nft.contract_address, floor_price);
                     }
                     if (floor_price >= 0) {
-                        if ((nft.price_details.price - floor_price) > 0) {
+                        if ((nft.price_details.price - floor_price) < 0) {
                             unsold_winTimes = unsold_winTimes + 1;
                         }
                         unsold_total = unsold_total + 1;
@@ -232,7 +234,10 @@ client.on('interactionCreate', async interaction => {
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setTitle(`${userAddress}`)
-                .setDescription(`win rate: ${winRate} | unsold win rate: ${unsold_winRate} `);
+                .addFields(
+                    { name: 'WinRate', value: `${winRate.toFixed(2)}` },
+                    { name: 'UnsoldWinRate', value: `${unsold_winRate.toFixed(2)}` },
+                )
             interaction.editReply({ embeds: [embed] });
         }
 
