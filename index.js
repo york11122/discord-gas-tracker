@@ -173,7 +173,7 @@ client.on('interactionCreate', async interaction => {
             const userAddress = interaction.options.getString('address');
             await interaction.deferReply();
             const nfts = await db.collection("tracking-user-nft-owned").find({
-                userAddress: userAddress,
+                userAddress: { $regex: new RegExp(userAddress, "i") },
             }).toArray();
 
             let nftsString = '';
@@ -196,7 +196,7 @@ client.on('interactionCreate', async interaction => {
             const userAddress = interaction.options.getString('address');
             await interaction.deferReply();
             const nfts = await db.collection("tracking-user-nft-owned").find({
-                userAddress: userAddress,
+                userAddress: { $regex: new RegExp(userAddress, "i") },
             }).toArray();
 
             let winTimes = 0;

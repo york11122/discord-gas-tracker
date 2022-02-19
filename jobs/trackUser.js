@@ -5,7 +5,7 @@ const randomip = require('random-ip');
 
 track = async (trackRecord, db) => {
     try {
-        let req = `https://api.nftport.xyz/v0/transactions/accounts/${trackRecord.userAddress}?chain=ethereum&type=sell&page_size=50&type=buy`;
+        let req = `https://api.nftport.xyz/v0/transactions/accounts/${trackRecord.userAddress}?chain=ethereum&type=sell&type=buy&page_size=50`;
         const res = await axios.get(req, {
             headers: {
                 "Authorization": process.env.NFTPORT_KEY
@@ -29,7 +29,7 @@ track = async (trackRecord, db) => {
                     continue;
                 }
                 if (item.type === 'sale') {
-                    if (item.seller_address === trackRecord.userAddress) {
+                    if (item.seller_address.toLowerCase() === trackRecord.userAddress.toLowerCase()) {
                         const nft = await db.collection("tracking-user-nft-owned").findOne({
                             userAddress: trackRecord.userAddress,
                             contract_address: item.nft.contract_address,
@@ -95,6 +95,7 @@ track = async (trackRecord, db) => {
                             token_id: item.nft.token_id,
                             contract_type: item.nft.contract_type,
                             img_url,
+                            isSold: false,
                             nft: `https://opensea.io/assets/${item.nft.contract_address}/${item.nft.token_id}`
                         })
                     }
