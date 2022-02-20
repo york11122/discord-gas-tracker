@@ -175,6 +175,7 @@ client.on('interactionCreate', async interaction => {
             // await interaction.deferReply();
             const nfts = await db.collection("tracking-user-nft-owned").find({
                 userAddress: { $regex: new RegExp(userAddress, "i") },
+                type: 'sale'
             }).toArray();
             let nftsString = '';
             let i = 0;
@@ -199,7 +200,7 @@ client.on('interactionCreate', async interaction => {
                 }
             }
             const overall_winrate = overall_sum / overall_count;
-            interaction.reply(overall_winrate.toFixed(2))
+            interaction.reply("Overall Roi " + overall_winrate.toFixed(2))
         }
 
 
@@ -208,14 +209,13 @@ client.on('interactionCreate', async interaction => {
             await interaction.deferReply();
             const nfts = await db.collection("tracking-user-nft-owned").find({
                 userAddress: { $regex: new RegExp(userAddress, "i") },
+                type: 'sale'
             }).toArray();
 
             let winTimes = 0;
             let sold_total = 0;
             let unsold_winTimes = 0;
             let unsold_total = 0;
-            let overall_count = 0;
-            let overall_sum = 0;
             let tempFloorPrice = new Map();
             for (let nft of nfts) {
                 if (nft.isSold) {
@@ -223,8 +223,6 @@ client.on('interactionCreate', async interaction => {
                         winTimes = winTimes + 1;
                     }
                     sold_total = sold_total + 1;
-                    overall_count = overall_count + 1;
-                    overall_sum = overall_sum + nft.roi
                 }
                 else {
                     let floor_price = tempFloorPrice.get(nft.contract_address);
@@ -243,7 +241,6 @@ client.on('interactionCreate', async interaction => {
 
             const winRate = winTimes / sold_total;
             const unsold_winRate = unsold_winTimes / unsold_total;
-            const overall_winrate = overall_sum / overall_count;
 
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
@@ -251,7 +248,6 @@ client.on('interactionCreate', async interaction => {
                 .addFields(
                     { name: 'WinRate', value: `${winRate.toFixed(2)}` },
                     { name: 'UnsoldWinRate', value: `${unsold_winRate.toFixed(2)}` },
-                    { name: 'OverallWinRate', value: `${overall_winrate.toFixed(2)}` },
                 )
             interaction.editReply({ embeds: [embed] });
         }
