@@ -1,10 +1,11 @@
 const axios = require('axios');
 require('dotenv').config();
 const _ = require("lodash");
+const randomip = require('random-ip');
 
 track = async (trackRecord, db) => {
     try {
-        let req = `https://api.nftport.xyz/v0/transactions/accounts/${trackRecord.userAddress}?chain=ethereum&type=sell&type=buy&type=mint&page_size=50`;
+        let req = `https://api.nftport.xyz/v0/transactions/accounts/${trackRecord.userAddress}?chain=ethereum&type=buy&type=mint&type=transfer_to&page_size=50`;
         const res = await axios.get(req, {
             headers: {
                 "Authorization": process.env.NFTPORT_KEY
@@ -21,6 +22,7 @@ track = async (trackRecord, db) => {
 
             // console.log(trackData)
             for (let item of trackData) {
+                console.log(item.type)
                 if (item.transaction_hash === trackRecord.lastTranHash) {
                     break;
                 }
@@ -47,7 +49,30 @@ track = async (trackRecord, db) => {
                         token_id: item.token_id,
                         img_url,
                         isSold: false,
-                        block_number: item.block_number,
+                        nft: `https://opensea.io/assets/${item.contract_address}/${item.token_id}`
+                    })
+                }
+
+                if (item.type === 'transfer') {
+                    // const contractDetail = await getContractDetail(item.nft);
+                    const img_url = '';
+                    // listToNodify.push({
+                    //     userAddress: trackRecord.userAddress,
+                    //     type: 'mint',
+                    //     transaction_date: item.transaction_date,
+                    //     price_details: 'NA',
+                    //     img_url,
+                    //     nft: `https://opensea.io/assets/${item.contract_address}/${item.token_id}`
+                    // })
+
+                    await db.collection("tracking-user-nft-owned").insertOne({
+                        type: item.type,
+                        userAddress: trackRecord.userAddress,
+                        transaction_date: item.transaction_date,
+                        contract_address: item.contract_address,
+                        token_id: item.token_id,
+                        img_url,
+                        isSold: false,
                         nft: `https://opensea.io/assets/${item.contract_address}/${item.token_id}`
                     })
                 }
@@ -63,8 +88,8 @@ track = async (trackRecord, db) => {
                         if (nft) {
 
                             if (nft.type === 'sale') {
-                                const profit = ((item.price_details.price * 0.875) - nft.price_details.price).toFixed(4);
-                                const roi = profit / nft.price_details.price
+                                const profit = (item.price_details.price - nft.price_details.price).toFixed(4);
+                                const roi = profit * 0.875 / nft.price_details.price
 
                                 listToNodify.push({
                                     userAddress: trackRecord.userAddress,
@@ -81,7 +106,7 @@ track = async (trackRecord, db) => {
                                     userAddress: trackRecord.userAddress,
                                     contract_address: item.nft.contract_address,
                                     token_id: item.nft.token_id
-                                }, { $set: { isSold: true, isWin: profit > 0 ? true : false, roi, transaction_date: item.transaction_date } }
+                                }, { $set: { isSold: true, isWin: profit > 0 ? true : false, roi } }
                                 )
                             }
 
@@ -108,8 +133,8 @@ track = async (trackRecord, db) => {
                     }
                     else {
 
-                        const contractDetail = await getContractDetail(item.nft);
-                        const img_url = contractDetail.nft.file_url;
+                        // const contractDetail = await getContractDetail(item.nft);
+                        const img_url = '';
                         listToNodify.push({
                             userAddress: trackRecord.userAddress,
                             type: 'buy',
@@ -131,7 +156,6 @@ track = async (trackRecord, db) => {
                             contract_type: item.nft.contract_type,
                             img_url,
                             isSold: false,
-                            block_number: item.block_number,
                             nft: `https://opensea.io/assets/${item.nft.contract_address}/${item.nft.token_id}`
                         })
                     }

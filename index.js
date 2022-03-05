@@ -2,14 +2,15 @@ require('dotenv').config();
 const { Client, MessageActionRow, MessageSelectMenu, MessageEmbed } = require('discord.js');
 const axios = require('axios');
 const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
-const trackUser = require('./jobs/trackUser')
+const track = require('./a')
 const MongoClient = require("mongodb").MongoClient;
-const randomip = require('random-ip');
-const { over } = require('lodash');
+
 const Mongoclient = new MongoClient(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 });
+
+const _ = require("lodash");
 
 let db = null;
 let mongo = null;
@@ -66,7 +67,7 @@ doTrack = async () => {
 
         if (trackingList) {
             for (let trackRecord of trackingList) {
-                const trackData = await trackUser.track(trackRecord, db);
+                const [cursor, trackData] = await track.trackUser(trackRecord, "both", 100, db, null);
                 for (let track of trackData) {
 
                     const exampleEmbed = new MessageEmbed()
@@ -75,18 +76,16 @@ doTrack = async () => {
                         .setURL(track.nft)
                         .setAuthor({ name: track.userAddress.slice(-5) })
                         .addFields(
-                            { name: 'Price', value: `${track.price_details.price}/${track.price_details.asset_type}` },
+                            { name: 'Price', value: `${track.price}` },
                         )
                         .setTimestamp(Date.parse(track.transaction_date))
 
-                    if (track.img_url && track.img_url.startsWith("https://")) {
-                        exampleEmbed.setThumbnail(track.img_url)
-                    }
+
                     if (track.type === "sell") {
 
-                        exampleEmbed.addField('Profit', `${track.profit}/${track.price_details.asset_type}`, true)
-                        exampleEmbed.addField('Buying Price', `${track.buy_price_details.price}/${track.price_details.asset_type}`, true)
-                        exampleEmbed.addField('Selling Price', `${track.price_details.price}/${track.price_details.asset_type}`, true)
+                        exampleEmbed.addField('Profit', `${track.profit.toFixed(2)}`, true)
+                        exampleEmbed.addField('Buying Price', `${track.price.toFixed(2)}`, true)
+                        exampleEmbed.addField('Selling Price', `${track.sellPrice.toFixed(2)}`, true)
                     }
 
                     const channel = client.channels.cache.get(trackRecord.channel);
@@ -175,24 +174,24 @@ client.on('interactionCreate', async interaction => {
             // await interaction.deferReply();
             const nfts = await db.collection("tracking-user-nft-owned").find({
                 userAddress: { $regex: new RegExp(userAddress, "i") },
-                type: 'sale'
+                isSold: true,
             }).toArray();
             let nftsString = '';
-            let i = 0;
             let overall_count = 0;
             let overall_sum = 0;
-            for (let nft of nfts) {
-                nftsString = nftsString + "\n" + `[Item](${nft.nft} '${nft.nft}') ${nft.isSold ? `(已賣出)  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : "(未賣出)"}`
-                if (i == nfts.length - 1 || i >= 15) {
+
+            const orderNfts = _.orderBy(nfts, ['sell_block_number'], ['desc']);
+            for (let [i, nft] of orderNfts.entries()) {
+                nftsString = nftsString + "\n" + `[${nft.sell_timestamp.split('T')[0]}](${nft.nft_url} '${nft.nft_url}') ${nft.isSold ? `(已賣出 ${nft.isTran ? "*" : ""})  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : "(未賣出)"}`
+                if ((i + 1) % 5 === 0 || (i + 1) >= nfts.length) {
                     const embed = new MessageEmbed()
                         .setColor('#0099ff')
                         .setTitle(`${userAddress}`)
                         .setDescription(`${nftsString}`);
                     interaction.channel.send({ embeds: [embed] });
                     nftsString = '';
-                    i = 0;
                 }
-                i = i + 1;
+
 
                 if (nft.isSold) {
                     overall_count = overall_count + 1;
@@ -209,7 +208,6 @@ client.on('interactionCreate', async interaction => {
             await interaction.deferReply();
             const nfts = await db.collection("tracking-user-nft-owned").find({
                 userAddress: { $regex: new RegExp(userAddress, "i") },
-                type: 'sale'
             }).toArray();
 
             let winTimes = 0;
@@ -217,7 +215,14 @@ client.on('interactionCreate', async interaction => {
             let unsold_winTimes = 0;
             let unsold_total = 0;
             let tempFloorPrice = new Map();
+
+            let overall_count = 0;
+            let overall_sum = 0;
             for (let nft of nfts) {
+                if (nft.isSold) {
+                    overall_count = overall_count + 1;
+                    overall_sum = overall_sum + nft.roi
+                }
                 if (nft.isSold) {
                     if (nft.isWin) {
                         winTimes = winTimes + 1;
@@ -225,13 +230,13 @@ client.on('interactionCreate', async interaction => {
                     sold_total = sold_total + 1;
                 }
                 else {
-                    let floor_price = tempFloorPrice.get(nft.contract_address);
-                    if (!floor_price) {
-                        floor_price = await getFloorPrice(nft.contract_address);
-                        tempFloorPrice.set(nft.contract_address, floor_price);
+                    let floor_price = tempFloorPrice.get(nft.token_address);
+                    if (floor_price == null) {
+                        floor_price = await track.getFloorPrice(nft.token_address);
+                        tempFloorPrice.set(nft.token_address, floor_price);
                     }
                     if (floor_price >= 0) {
-                        if ((nft.price_details.price - floor_price) < 0) {
+                        if ((nft.price - floor_price) < 0) {
                             unsold_winTimes = unsold_winTimes + 1;
                         }
                         unsold_total = unsold_total + 1;
@@ -241,6 +246,7 @@ client.on('interactionCreate', async interaction => {
 
             const winRate = winTimes / sold_total;
             const unsold_winRate = unsold_winTimes / unsold_total;
+            const overall_roi = overall_sum / overall_count;
 
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
@@ -248,6 +254,7 @@ client.on('interactionCreate', async interaction => {
                 .addFields(
                     { name: 'WinRate', value: `${winRate.toFixed(2)}` },
                     { name: 'UnsoldWinRate', value: `${unsold_winRate.toFixed(2)}` },
+                    { name: 'Overall roi', value: `${overall_roi.toFixed(2)}` },
                 )
             interaction.editReply({ embeds: [embed] });
         }
@@ -288,6 +295,6 @@ client.on('interactionCreate', async interaction => {
 });
 
 setInterval(getGas, 5 * 1000);
-setInterval(doTrack, 5 * 60 * 1000);
+// setInterval(doTrack, 5 * 60 * 1000);
 client.login(process.env.DISCORD_TOKEN);
 
