@@ -260,7 +260,7 @@ client.on('interactionCreate', async interaction => {
                 .addFields(
                     { name: 'Nfts', value: `Sold:${sold_total} (${(sold_total / nfts.length).toFixed(2)}) / Unsold:${unsold_real_total} (${(unsold_real_total / nfts.length).toFixed(2)}) / Total:${nfts.length}` },
                     { name: 'Latest sell', value: `${latestSell ? `[${latestSell.sell_timestamp}](${latestSell.nft_url} '${latestSell.nft_url}')` : "NAN"}` },
-                    { name: 'Latest buy', value: `${latestSell ? `[${latestBuy.buy_timestamp}](${latestBuy.nft_url} '${latestBuy.nft_url}')` : "NAN"}` },
+                    { name: 'Latest buy', value: `${latestBuy ? `[${latestBuy.buy_timestamp}](${latestBuy.nft_url} '${latestBuy.nft_url}')` : "NAN"}` },
                     { name: 'WinRate', value: `${winRate.toFixed(2)}` },
                     { name: 'UnsoldWinRate', value: `${unsold_winRate.toFixed(2)}` },
                     { name: 'Overall roi', value: `${overall_roi.toFixed(2)}` },
