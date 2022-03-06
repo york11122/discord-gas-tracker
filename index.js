@@ -277,9 +277,33 @@ client.on('interactionCreate', async interaction => {
         if (interaction.isCommand() && interaction.commandName === 'list_track') {
             await interaction.deferReply();
             const trackList = await db.collection("nft-tracking-list").find({ channel: interaction.channel.id }).toArray();
+
             let trackListString = '';
+            let temp = []
             for (let track of trackList) {
-                trackListString = trackListString + "\n" + track.userAddress;
+                let winTimes = 0;
+                let sold_total = 0;
+
+                const nfts = await db.collection("tracking-user-nft-owned").find({
+                    userAddress: { $regex: new RegExp(track.userAddress, "i") },
+                }).toArray();
+                for (let nft of nfts) {
+                    if (nft.isSold) {
+                        if (nft.isWin) {
+                            winTimes = winTimes + 1;
+                        }
+                        sold_total = sold_total + 1;
+                    }
+                }
+                const winRate = sold_total > 0 ? winTimes / sold_total : 0;
+
+                temp.push({ userAddress: track.userAddress, winRate })
+
+            }
+            const ordered = _.orderBy(temp, ['winRate'], ['desc'])
+
+            for (let i of ordered) {
+                trackListString = trackListString + "\n" + i.winRate.toFixed(2) + " / " + i.userAddress;
             }
 
             const embed = new MessageEmbed()

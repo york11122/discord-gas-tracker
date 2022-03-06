@@ -78,7 +78,6 @@ const trackUser = async (trackRecord, direction, limit, db, cursor) => {
     let listToNodify = [];
     if (trackRecord.lastTranHash) {
         for (let item of resultData) {
-            console.log(trackRecord.userAddress)
             //stop tracking selling data when selling data is older than buying data
             if (direction === "from") {
                 if (item.block_number <= min_time_block) {
