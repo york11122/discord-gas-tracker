@@ -214,10 +214,12 @@ client.on('interactionCreate', async interaction => {
             let sold_total = 0;
             let unsold_winTimes = 0;
             let unsold_total = 0;
+            let unsold_real_total = 0;
             let tempFloorPrice = new Map();
 
             let overall_count = 0;
             let overall_sum = 0;
+
             for (let nft of nfts) {
                 if (nft.isSold) {
                     overall_count = overall_count + 1;
@@ -241,9 +243,13 @@ client.on('interactionCreate', async interaction => {
                         }
                         unsold_total = unsold_total + 1;
                     }
+                    unsold_real_total = unsold_real_total + 1;
                 }
             }
 
+            const orders = _.orderBy(nfts, ['sell_timestamp'], ['desc'])
+            const latestBuy = _.find(orders, { isSold: false })
+            const latestSell = _.find(orders, { isSold: true })
             const winRate = winTimes / sold_total;
             const unsold_winRate = unsold_winTimes / unsold_total;
             const overall_roi = overall_sum / overall_count;
@@ -252,6 +258,9 @@ client.on('interactionCreate', async interaction => {
                 .setColor('#0099ff')
                 .setTitle(`${userAddress}`)
                 .addFields(
+                    { name: 'Nfts', value: `Sold:${sold_total} (${(sold_total / nfts.length).toFixed(2)}) / Unsold:${unsold_real_total} (${(unsold_real_total / nfts.length).toFixed(2)}) / Total:${nfts.length}` },
+                    { name: 'Latest sell', value: `${latestSell ? `[${latestSell.sell_timestamp}](${latestSell.nft_url} '${latestSell.nft_url}')` : "NAN"}` },
+                    { name: 'Latest buy', value: `${latestSell ? `[${latestBuy.buy_timestamp}](${latestBuy.nft_url} '${latestBuy.nft_url}')` : "NAN"}` },
                     { name: 'WinRate', value: `${winRate.toFixed(2)}` },
                     { name: 'UnsoldWinRate', value: `${unsold_winRate.toFixed(2)}` },
                     { name: 'Overall roi', value: `${overall_roi.toFixed(2)}` },
