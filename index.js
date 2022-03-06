@@ -174,15 +174,14 @@ client.on('interactionCreate', async interaction => {
             // await interaction.deferReply();
             const nfts = await db.collection("tracking-user-nft-owned").find({
                 userAddress: { $regex: new RegExp(userAddress, "i") },
-                isSold: true,
-            }).toArray();
+            }).limit(50).toArray();
             let nftsString = '';
             let overall_count = 0;
             let overall_sum = 0;
 
-            const orderNfts = _.orderBy(nfts, ['sell_block_number'], ['desc']);
+            const orderNfts = _.orderBy(nfts, ['buy_block_number'], ['desc']);
             for (let [i, nft] of orderNfts.entries()) {
-                nftsString = nftsString + "\n" + `[${nft.sell_timestamp.split('T')[0]}](${nft.nft_url} '${nft.nft_url}') ${nft.isSold ? `(已賣出 ${nft.isTran ? "*" : ""})  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : "(未賣出)"}`
+                nftsString = nftsString + "\n" + `[${nft.buy_timestamp.split('T')[0]}](${nft.nft_url} '${nft.nft_url}') ${nft.isSold ? `(已賣出 ${nft.isTran ? "*" : ""} ${nft.sell_timestamp.split('T')[0]})  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : "(未賣出)"}`
                 if ((i + 1) % 5 === 0 || (i + 1) >= nfts.length) {
                     const embed = new MessageEmbed()
                         .setColor('#0099ff')
@@ -261,8 +260,8 @@ client.on('interactionCreate', async interaction => {
                     { name: 'Nfts', value: `Sold:${sold_total} (${(sold_total / nfts.length).toFixed(2)}) / Unsold:${unsold_real_total} (${(unsold_real_total / nfts.length).toFixed(2)}) / Total:${nfts.length}` },
                     { name: 'Latest sell', value: `${latestSell ? `[${latestSell.sell_timestamp}](${latestSell.nft_url} '${latestSell.nft_url}')` : "NAN"}` },
                     { name: 'Latest buy', value: `${latestBuy ? `[${latestBuy.buy_timestamp}](${latestBuy.nft_url} '${latestBuy.nft_url}')` : "NAN"}` },
-                    { name: 'WinRate', value: `${winRate.toFixed(2)}` },
-                    { name: 'UnsoldWinRate', value: `${unsold_winRate.toFixed(2)}` },
+                    { name: 'WinRate', value: `${winRate.toFixed(2)} (${winTimes} Win / ${sold_total - winTimes} Lose)` },
+                    { name: 'UnsoldWinRate', value: `${unsold_winRate.toFixed(2)} (${unsold_winTimes} Win / ${unsold_total - unsold_winTimes} Lose)` },
                     { name: 'Overall roi', value: `${overall_roi.toFixed(2)}` },
                 )
             interaction.editReply({ embeds: [embed] });
