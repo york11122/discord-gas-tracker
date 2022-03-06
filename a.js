@@ -24,7 +24,7 @@ getAccountTransfer = async (accountAddress, limit, direction, cursor) => {
         return res.data
     }
     catch (err) {
-        console.log(err.message, 123)
+        console.log(err.message)
     }
 }
 
@@ -43,12 +43,12 @@ getNftTrade = async (token_address, block_number, transaction_hash) => {
         return detail ? detail : null
     }
     catch (err) {
-        console.log(err.message, data, token_address)
+        console.log(err.message)
     }
 }
 
 const trackUser = async (trackRecord, direction, limit, db, cursor) => {
-
+    console.log(trackRecord.userAddress, 'tracking')
     let min_time_block;
 
     if (direction === "from") {
@@ -91,7 +91,6 @@ const trackUser = async (trackRecord, direction, limit, db, cursor) => {
 
             // pass mint
             if (item.from_address === '0x0000000000000000000000000000000000000000' || item.value === '0') {
-                console.log('mint')
                 continue;
             }
 
@@ -178,7 +177,7 @@ const trackUser = async (trackRecord, direction, limit, db, cursor) => {
                     }
                 }
                 else {
-                    console.log('not found.')
+                    //console.log('not found.')
                 }
             }
         }
