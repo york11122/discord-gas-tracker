@@ -246,9 +246,13 @@ client.on('interactionCreate', async interaction => {
                 }
             }
 
-            const orders = _.orderBy(nfts, ['sell_timestamp'], ['desc'])
-            const latestBuy = _.find(orders, { isSold: false })
-            const latestSell = _.find(orders, { isSold: true })
+
+            const buy = _.filter(nfts, { isSold: false })
+            const orders_buy = _.orderBy(buy, ['buy_timestamp'], ['desc'])
+            const latestBuy = orders_buy[0];
+            const sell = _.filter(nfts, { isSold: true })
+            const orders_sell = _.orderBy(sell, ['sell_timestamp'], ['desc'])
+            const latestSell = orders_sell[0];
             const winRate = winTimes / sold_total;
             const unsold_winRate = unsold_winTimes / unsold_total;
             const overall_roi = overall_sum / overall_count;
