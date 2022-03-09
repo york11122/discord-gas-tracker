@@ -302,6 +302,7 @@ client.on('interactionCreate', async interaction => {
                 }).toArray();
                 for (let nft of nfts) {
                     if (nft.isSold) {
+                        console.log(123)
                         if (nft.isWin) {
                             winTimes = winTimes + 1;
                         }
@@ -316,7 +317,7 @@ client.on('interactionCreate', async interaction => {
             const ordered = _.orderBy(temp, ['winRate'], ['desc'])
 
             for (let i of ordered) {
-                trackListString = trackListString + "\n" + i.winRate.toFixed(2) + " / " + i.userAddress;
+                trackListString = trackListString + "\n" + i.winRate.toFixed(2) + " / " + i.userAddress + `/ ${i.isProcess ? "" : "尚未處理"}`;
             }
 
             const embed = new MessageEmbed()
