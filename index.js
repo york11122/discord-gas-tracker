@@ -60,14 +60,15 @@ getFloorPrice = async (contract_address) => {
         return -1;
     }
 }
+const apiKey = "vKi6zzRfweVu3mmBZtbQLzGoVGH8QTt2ay2c7s3eYa2nFxDqVcHJSK2TjagFAiDX";
 
 doTrack = async () => {
     try {
-        const trackingList = await db.collection("nft-tracking-list").find({}).toArray()
+        const trackingList = await db.collection("nft-tracking-list").find({ isProcess: true }).toArray()
 
         if (trackingList) {
             for (let trackRecord of trackingList) {
-                const [cursor, trackData] = await track.trackUser(trackRecord, "both", 100, db, null);
+                const [cursor, trackData] = await track.trackUser(trackRecord, "both", 100, db, null, apiKey);
                 for (let track of trackData) {
 
                     const exampleEmbed = new MessageEmbed()
@@ -159,7 +160,7 @@ client.on('interactionCreate', async interaction => {
             )
             if (!trackUser) {
                 await db.collection("nft-tracking-list").insertOne(
-                    { channel: interaction.channel.id, userAddress, lastTranHash: null }
+                    { channel: interaction.channel.id, userAddress, lastTranHash: null, isProcess: false }
                 )
             }
             const embed = new MessageEmbed()

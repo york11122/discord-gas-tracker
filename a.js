@@ -9,7 +9,7 @@ function sleep(ms) {
 }
 
 
-getAccountTransfer = async (accountAddress, limit, direction, cursor) => {
+getAccountTransfer = async (accountAddress, limit, direction, cursor, apiKey) => {
     try {
         let url = `https://deep-index.moralis.io/api/v2/${accountAddress}/nft/transfers?chain=eth&format=decimal&limit=${limit}&direction=${direction}`;
         if (cursor) {
@@ -17,7 +17,7 @@ getAccountTransfer = async (accountAddress, limit, direction, cursor) => {
         }
         const res = await axios.get(url, {
             headers: {
-                "X-API-Key": "vKi6zzRfweVu3mmBZtbQLzGoVGH8QTt2ay2c7s3eYa2nFxDqVcHJSK2TjagFAiDX",
+                "X-API-Key": apiKey,
             }
         })
 
@@ -28,13 +28,13 @@ getAccountTransfer = async (accountAddress, limit, direction, cursor) => {
     }
 }
 
-getNftTrade = async (token_address, block_number, transaction_hash) => {
+getNftTrade = async (token_address, block_number, transaction_hash, apiKey) => {
     let data;
     await sleep(200);
     try {
         const res = await axios.get(`https://deep-index.moralis.io/api/v2/nft/${token_address}/trades?chain=eth&format=decimal&from_block=${block_number}`, {
             headers: {
-                "X-API-Key": "vKi6zzRfweVu3mmBZtbQLzGoVGH8QTt2ay2c7s3eYa2nFxDqVcHJSK2TjagFAiDX",
+                "X-API-Key": apiKey,
             }
         })
 
@@ -47,7 +47,7 @@ getNftTrade = async (token_address, block_number, transaction_hash) => {
     }
 }
 
-const trackUser = async (trackRecord, direction, limit, db, cursor) => {
+const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
     console.log(trackRecord.userAddress, 'tracking')
     let min_time_block;
 
@@ -67,7 +67,7 @@ const trackUser = async (trackRecord, direction, limit, db, cursor) => {
         min_time_block = res[0].min
     }
 
-    const data = await getAccountTransfer(trackRecord.userAddress, limit, direction, cursor);
+    const data = await getAccountTransfer(trackRecord.userAddress, limit, direction, cursor, apiKey);
     const resultData = data.result;
 
     if (resultData.length === 0) {
@@ -84,9 +84,15 @@ const trackUser = async (trackRecord, direction, limit, db, cursor) => {
                     break;
                 }
             }
+
+
             //no new record
             if (item.transaction_hash === trackRecord.lastTranHash) {
                 break;
+            }
+
+            if (item.contract_type === "ERC1155") {
+                continue;
             }
 
             // pass mint
@@ -96,7 +102,7 @@ const trackUser = async (trackRecord, direction, limit, db, cursor) => {
 
             // buy
             if (item.to_address.toLowerCase() === trackRecord.userAddress.toLowerCase()) {
-                const detail = await getNftTrade(item.token_address, item.block_number, item.transaction_hash)
+                const detail = await getNftTrade(item.token_address, item.block_number, item.transaction_hash, apiKey)
                 if (!detail) {
                     console.log('no detail')
                     continue;
@@ -143,7 +149,7 @@ const trackUser = async (trackRecord, direction, limit, db, cursor) => {
                 })
                 // if exist then caculate roi
                 if (nft) {
-                    const detail = await getNftTrade(item.token_address, item.block_number, item.transaction_hash)
+                    const detail = await getNftTrade(item.token_address, item.block_number, item.transaction_hash, apiKey)
                     if (detail) {
                         const sellPrice = detail.price / 1000000000000000000;
                         const profit = ((sellPrice * 0.875) - nft.price).toFixed(4);
