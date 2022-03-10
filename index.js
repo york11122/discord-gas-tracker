@@ -317,7 +317,7 @@ client.on('interactionCreate', async interaction => {
             const ordered = _.orderBy(temp, ['winRate'], ['desc'])
 
             for (let i of ordered) {
-                trackListString = trackListString + "\n" + i.winRate.toFixed(2) + " / " + i.userAddress + `/ ${i.isProcess}`;
+                trackListString = trackListString + "\n" + i.winRate.toFixed(2) + " / " + i.userAddress;
             }
 
             const embed = new MessageEmbed()
