@@ -64,7 +64,9 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
                 { $match: { _id: trackRecord.userAddress } }
             ]
         ).toArray()
-        min_time_block = res[0].min
+        const min_data = _.find(res, { _id: trackRecord.userAddress })
+        if (!min_data) { return []; }
+        min_time_block = _.find(res, { _id: trackRecord.userAddress }).min
     }
 
     const data = await getAccountTransfer(trackRecord.userAddress, limit, direction, cursor, apiKey);
@@ -79,6 +81,7 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
     if (trackRecord.lastTranHash) {
         for (let item of resultData) {
             //stop tracking selling data when selling data is older than buying data
+
             if (direction === "from") {
                 if (item.block_number <= min_time_block) {
                     break;

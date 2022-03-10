@@ -39,12 +39,12 @@ const main = async () => {
     }
 
 
+    await db.collection("nft-tracking-list").updateMany({}, { $set: { lastTranHash: '123', isProcess: false } })
 
 
     trackingList = await db.collection("nft-tracking-list").find({ isProcess: false }).toArray()
     if (trackingList) {
 
-        await db.collection("nft-tracking-list").updateMany({}, { $set: { lastTranHash: '123' } })
 
 
         for (let trackRecord of trackingList) {
