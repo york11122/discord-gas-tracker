@@ -175,7 +175,7 @@ client.on('interactionCreate', async interaction => {
             // await interaction.deferReply();
             const nfts = await db.collection("tracking-user-nft-owned").find({
                 userAddress: { $regex: new RegExp(userAddress, "i") },
-            }).limit(50).toArray();
+            }).limit(50).sort({ _id: -1 }).toArray();
             let nftsString = '';
             let overall_count = 0;
             let overall_sum = 0;
@@ -302,7 +302,6 @@ client.on('interactionCreate', async interaction => {
                 }).toArray();
                 for (let nft of nfts) {
                     if (nft.isSold) {
-                        console.log(123)
                         if (nft.isWin) {
                             winTimes = winTimes + 1;
                         }
