@@ -175,14 +175,31 @@ client.on('interactionCreate', async interaction => {
             // await interaction.deferReply();
             const nfts = await db.collection("tracking-user-nft-owned").find({
                 userAddress: { $regex: new RegExp(userAddress, "i") },
-            }).limit(50).sort({ _id: -1 }).toArray();
+            }).sort({ buy_block_number: -1 }).limit(50).toArray();
             let nftsString = '';
             let overall_count = 0;
             let overall_sum = 0;
-
+            let tempFloorPrice = new Map();
             const orderNfts = _.orderBy(nfts, ['buy_block_number'], ['desc']);
             for (let [i, nft] of orderNfts.entries()) {
-                nftsString = nftsString + "\n" + `[${nft.buy_timestamp.split('T')[0]}](${nft.nft_url} '${nft.nft_url}') ${nft.isSold ? `(已賣出 ${nft.isTran ? "*" : ""} ${nft.sell_timestamp.split('T')[0]})  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : "(未賣出)"}`
+                let unsold_roi = null;
+                let floor_price = null;
+                //未賣出roi
+                if (!nft.isSold) {
+                    floor_price = tempFloorPrice.get(nft.token_address);
+                    if (floor_price == null) {
+                        floor_price = await track.getFloorPrice(nft.token_address);
+                        tempFloorPrice.set(nft.token_address, floor_price);
+                    }
+
+                    if (floor_price >= 0) {
+                        unsold_roi = (((floor_price * 0.875) - nft.price) / nft.price).toFixed(4)
+                    }
+                }
+
+                nftsString = nftsString + "\n" + `[${nft.buy_timestamp.split('T')[0]}](${nft.nft_url} '${nft.nft_url}') ${nft.isSold ? `(已賣出 ${nft.isTran ? "*" : ""} ${nft.sell_timestamp.split('T')[0]})  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : `(未賣出 Unsold roi: ${unsold_roi ? unsold_roi : ""} FloorPrice: ${unsold_roi ? floor_price : "NA"})`}`
+
+
                 if ((i + 1) % 5 === 0 || (i + 1) >= nfts.length) {
                     const embed = new MessageEmbed()
                         .setColor('#0099ff')
