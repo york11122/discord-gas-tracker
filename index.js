@@ -215,7 +215,7 @@ client.on('interactionCreate', async interaction => {
                     overall_sum = overall_sum + nft.roi
                 }
             }
-            const overall_winrate = overall_sum / overall_count;
+            interaction.reply(".");
         }
 
 
