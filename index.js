@@ -197,7 +197,7 @@ client.on('interactionCreate', async interaction => {
                     }
                 }
 
-                nftsString = nftsString + "\n" + `[${nft.buy_timestamp.split('T')[0]}](${nft.nft_url} '${nft.nft_url}') ${nft.isSold ? `(已賣出 ${nft.isTran ? "*" : ""} ${nft.sell_timestamp.split('T')[0]})  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : `(未賣出 Unsold roi: ${unsold_roi ? unsold_roi : ""} FloorPrice: ${unsold_roi ? floor_price : "NA"})`}`
+                nftsString = nftsString + "\n" + `[${nft.buy_timestamp.split('T')[0]}](${nft.nft_url} '${nft.nft_url}') ${nft.isSold ? `(已賣出 ${nft.isTran ? "*" : ""} ${nft.sell_timestamp.split('T')[0]})  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : `(未賣出 Unsold roi: ${unsold_roi ? unsold_roi : ""} / FloorPrice: ${unsold_roi ? floor_price : "NA"})`}`
 
 
                 if ((i + 1) % 5 === 0 || (i + 1) >= nfts.length) {
@@ -216,7 +216,6 @@ client.on('interactionCreate', async interaction => {
                 }
             }
             const overall_winrate = overall_sum / overall_count;
-            interaction.reply("Overall Roi " + overall_winrate.toFixed(2))
         }
 
 
