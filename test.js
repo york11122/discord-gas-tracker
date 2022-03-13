@@ -25,7 +25,7 @@ const main = async () => {
 
         for (let trackRecord of trackingList) {
             await db.collection("tracking-user-nft-owned").deleteMany({ userAddress: trackRecord.userAddress })
-            await db.collection("nft-tracking-list").updateMany({}, { $set: { lastTranHash: '123' } })
+            await db.collection("nft-tracking-list").updateOne({ userAddress: trackRecord.userAddress }, { $set: { lastTranHash: '123' } })
         }
 
         for (let trackRecord of trackingList) {
@@ -41,9 +41,9 @@ const main = async () => {
 
 
     if (trackingList) {
-
-        await db.collection("nft-tracking-list").updateMany({}, { $set: { lastTranHash: '123', isProcess: false } })
-
+        for (let trackRecord of trackingList) {
+            await db.collection("nft-tracking-list").updateOne({ userAddress: trackRecord.userAddress }, { $set: { lastTranHash: '123', isProcess: false } })
+        }
         for (let trackRecord of trackingList) {
             let cursor = null;
             let notify = null;

@@ -203,7 +203,7 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
 
 const getFloorPrice = async (contract_address) => {
     try {
-        const url = `https://deep-index.moralis.io/api/v2/nft/${contract_address}/lowestprice`;
+        const url = `https://deep-index.moralis.io/api/v2/nft/${contract_address}/lowestprice?days=1`;
         const response = await axios.get(url, {
             headers: {
                 "X-API-Key": "vKi6zzRfweVu3mmBZtbQLzGoVGH8QTt2ay2c7s3eYa2nFxDqVcHJSK2TjagFAiDX",

@@ -53,7 +53,7 @@ getFloorPrice = async (contract_address) => {
                 "Authorization": process.env.NFTPORT_KEY,
             }
         });
-        await sleep(400);
+        await sleep(300);
         return response.data.statistics.floor_price ? response.data.statistics.floor_price : -1;
     } catch (err) {
         console.log(contract_address)
@@ -188,7 +188,8 @@ client.on('interactionCreate', async interaction => {
                 if (!nft.isSold) {
                     floor_price = tempFloorPrice.get(nft.token_address);
                     if (floor_price == null) {
-                        floor_price = await track.getFloorPrice(nft.token_address);
+                        //floor_price = await track.getFloorPrice(nft.token_address);
+                        floor_price = await getFloorPrice(nft.token_address);
                         tempFloorPrice.set(nft.token_address, floor_price);
                     }
 
@@ -250,7 +251,8 @@ client.on('interactionCreate', async interaction => {
                 else {
                     let floor_price = tempFloorPrice.get(nft.token_address);
                     if (floor_price == null) {
-                        floor_price = await track.getFloorPrice(nft.token_address);
+                        //floor_price = await track.getFloorPrice(nft.token_address);
+                        floor_price = await getFloorPrice(nft.token_address);
                         tempFloorPrice.set(nft.token_address, floor_price);
                     }
                     if (floor_price >= 0) {
