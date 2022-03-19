@@ -19,7 +19,7 @@ client.once('ready', async () => {
     mongo = await Mongoclient.connect();
     db = mongo.db("discord-bot");
     getGas();
-   // doTrack();
+    doTrack();
 });
 
 let gasPrices = {};
@@ -351,6 +351,6 @@ client.on('interactionCreate', async interaction => {
 });
 
 setInterval(getGas, 5 * 1000);
-//setInterval(doTrack, 5 * 60 * 1000);
+setInterval(doTrack, 5 * 60 * 1000);
 client.login(process.env.DISCORD_TOKEN);
 
