@@ -70,8 +70,16 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
     }
 
     const data = await getAccountTransfer(trackRecord.userAddress, limit, direction, cursor, apiKey);
-    const resultData = data.result;
-
+    const source = data.result;
+    const processData = []
+    for(let item of source){
+        if (item.transaction_hash === trackRecord.lastTranHash) {
+            break;
+        }
+        processData.push(item)
+    }
+    const resultData =  _.orderBy(processData,['block_number'],['asc']);
+    
     if (resultData.length === 0) {
         return [];
     }
@@ -82,16 +90,13 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
         for (let item of resultData) {
             //stop tracking selling data when selling data is older than buying data
 
+            if(item.token_address === "0x87e738a3d5e5345d6212d8982205a564289e6324" && item.token_id === "3969"){
+                console.log(item)
+            }
             if (direction === "from") {
                 if (item.block_number <= min_time_block) {
                     break;
                 }
-            }
-
-
-            //no new record
-            if (item.transaction_hash === trackRecord.lastTranHash) {
-                break;
             }
 
             if (item.contract_type === "ERC1155") {
@@ -99,7 +104,7 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
             }
 
             // pass mint
-            if (item.from_address === '0x0000000000000000000000000000000000000000' || item.value === '0') {
+            if (item.from_address === '0x0000000000000000000000000000000000000000') {
                 continue;
             }
 
@@ -132,7 +137,12 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
                     sell_block_number: null
 
                 }
-                await db.collection("tracking-user-nft-owned").insertOne(nft)
+                await db.collection("tracking-user-nft-owned").updateOne({
+                    userAddress: trackRecord.userAddress,
+                    token_address: item.token_address,
+                    token_id: item.token_id,
+                }, { $set: nft }, { upsert: true })
+
                 listToNodify.push({
                     userAddress: trackRecord.userAddress,
                     type: 'buy',

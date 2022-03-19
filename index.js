@@ -19,7 +19,7 @@ client.once('ready', async () => {
     mongo = await Mongoclient.connect();
     db = mongo.db("discord-bot");
     getGas();
-    doTrack();
+   // doTrack();
 });
 
 let gasPrices = {};
@@ -172,7 +172,8 @@ client.on('interactionCreate', async interaction => {
 
         if (interaction.isCommand() && interaction.commandName === 'get_nfts') {
             const userAddress = interaction.options.getString('address');
-            // await interaction.deferReply();
+            await interaction.deferReply();
+    
             const nfts = await db.collection("tracking-user-nft-owned").find({
                 userAddress: { $regex: new RegExp(userAddress, "i") },
             }).sort({ buy_block_number: -1 }).limit(50).toArray();
@@ -216,7 +217,7 @@ client.on('interactionCreate', async interaction => {
                     overall_sum = overall_sum + nft.roi
                 }
             }
-            interaction.reply(".");
+            interaction.editReply('123');
         }
 
 
@@ -350,6 +351,6 @@ client.on('interactionCreate', async interaction => {
 });
 
 setInterval(getGas, 5 * 1000);
-setInterval(doTrack, 5 * 60 * 1000);
+//setInterval(doTrack, 5 * 60 * 1000);
 client.login(process.env.DISCORD_TOKEN);
 
