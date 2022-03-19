@@ -65,7 +65,7 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
             ]
         ).toArray()
         const min_data = _.find(res, { _id: trackRecord.userAddress })
-        if (!min_data) { return []; }
+        if (!min_data) { return [null,[]]; }
         min_time_block = _.find(res, { _id: trackRecord.userAddress }).min
     }
 
@@ -79,9 +79,9 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
         processData.push(item)
     }
     const resultData =  _.orderBy(processData,['block_number'],['asc']);
-    
+    console.log(resultData.length)
     if (resultData.length === 0) {
-        return [];
+        return [null,[]];
     }
     const lastTranHash = resultData[0].transaction_hash
     const returnCursor = data.cursor
