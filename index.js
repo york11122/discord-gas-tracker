@@ -160,7 +160,7 @@ client.on('interactionCreate', async interaction => {
             )
             if (!trackUser) {
                 await db.collection("nft-tracking-list").insertOne(
-                    { channel: interaction.channel.id, userAddress, lastTranHash: null, isProcess: false }
+                    { channel: interaction.channel.id, userAddress, lastTranHash: "None", isProcess: false }
                 )
             }
             const embed = new MessageEmbed()
@@ -199,8 +199,13 @@ client.on('interactionCreate', async interaction => {
                     }
                 }
 
+                if(nft.isTransfer){
+                nftsString = nftsString + "\n" + `[${nft.buy_timestamp.split('T')[0]}](${nft.nft_url} '${nft.nft_url}') Transfer`
+                    
+                }
+                else{
                 nftsString = nftsString + "\n" + `[${nft.buy_timestamp.split('T')[0]}](${nft.nft_url} '${nft.nft_url}') ${nft.isSold ? `(已賣出 ${nft.isTran ? "*" : ""} ${nft.sell_timestamp.split('T')[0]})  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : `(未賣出 Unsold roi: ${unsold_roi ? unsold_roi : ""} / FloorPrice: ${unsold_roi ? floor_price : "NA"})`}`
-
+                }
 
                 if ((i + 1) % 5 === 0 || (i + 1) >= nfts.length) {
                     const embed = new MessageEmbed()
@@ -239,9 +244,11 @@ client.on('interactionCreate', async interaction => {
             let overall_sum = 0;
 
             for (let nft of nfts) {
+                if(nft.isTransfer) continue
                 if (nft.isSold) {
                     overall_count = overall_count + 1;
                     overall_sum = overall_sum + nft.roi
+                   
                 }
                 if (nft.isSold) {
                     if (nft.isWin) {
@@ -272,11 +279,17 @@ client.on('interactionCreate', async interaction => {
             const latestBuy = orders_buy[0];
             const sell = _.filter(nfts, { isSold: true })
             const orders_sell = _.orderBy(sell, ['sell_timestamp'], ['desc'])
-            const latestSell = orders_sell[0];
+            let latestSell = null;
+            for(let i of  orders_sell){
+                if(i.isTransfer !== true){
+                    latestSell = i
+                    break;
+                }
+            }
             const winRate = winTimes / sold_total;
             const unsold_winRate = unsold_winTimes / unsold_total;
             const overall_roi = overall_sum / overall_count;
-
+            console.log("***************", overall_sum,overall_count )
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setTitle(`${userAddress}`)
@@ -320,6 +333,7 @@ client.on('interactionCreate', async interaction => {
                     userAddress: { $regex: new RegExp(track.userAddress, "i") },
                 }).toArray();
                 for (let nft of nfts) {
+                    if(nft.isTransfer) continue
                     if (nft.isSold) {
                         if (nft.isWin) {
                             winTimes = winTimes + 1;

@@ -88,6 +88,7 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
     let listToNodify = [];
     if (trackRecord.lastTranHash) {
         for (let item of resultData) {
+            console.log(item.block_timestamp)
             //stop tracking selling data when selling data is older than buying data
 
             if(item.token_address === "0x87e738a3d5e5345d6212d8982205a564289e6324" && item.token_id === "3969"){
@@ -187,11 +188,17 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
                         })
                     }
                     else {
-                        await db.collection("tracking-user-nft-owned").deleteOne({
+                        await db.collection("tracking-user-nft-owned").updateOne({
                             userAddress: trackRecord.userAddress,
                             token_address: item.token_address,
                             token_id: item.token_id,
-                        })
+                        }, { $set: { isSold:true, isTransfer: true } })
+
+                        // await db.collection("tracking-user-nft-owned").deleteOne({
+                        //     userAddress: trackRecord.userAddress,
+                        //     token_address: item.token_address,
+                        //     token_id: item.token_id,
+                        // })
 
                     }
                 }
