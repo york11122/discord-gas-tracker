@@ -84,7 +84,7 @@ doTrack = async () => {
 
                     if (track.type === "sell") {
 
-                        exampleEmbed.addField('Profit', `${track.profit.toFixed(2)}`, true)
+                        exampleEmbed.addField('Profit', `${(track.sellPrice-track.price).toFixed(2)}`, true)
                         exampleEmbed.addField('Buying Price', `${track.price.toFixed(2)}`, true)
                         exampleEmbed.addField('Selling Price', `${track.sellPrice.toFixed(2)}`, true)
                     }
