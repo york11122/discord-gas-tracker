@@ -83,7 +83,8 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
     if (resultData.length === 0) {
         return [null,[]];
     }
-    const lastTranHash = resultData[0].transaction_hash
+    const lastData = _.findLast(resultData)
+    const lastTranHash = lastData.transaction_hash
     const returnCursor = data.cursor
     let listToNodify = [];
     if (trackRecord.lastTranHash) {
