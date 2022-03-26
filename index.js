@@ -87,6 +87,8 @@ doTrack = async () => {
                         exampleEmbed.addField('Profit', `${(track.sellPrice-track.price).toFixed(2)}`, true)
                         exampleEmbed.addField('Buying Price', `${track.price.toFixed(2)}`, true)
                         exampleEmbed.addField('Selling Price', `${track.sellPrice.toFixed(2)}`, true)
+                        exampleEmbed.addField('Buying Date', `${Date.parse(track.transaction_date)}`, true)
+                        exampleEmbed.setTimestamp(Date.parse(track.sell_date))
                         
                     }
 
