@@ -133,6 +133,7 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
                     price: detail.price / 1000000000000000000,
                     isSold: false,
                     isWin: false,
+                    isTransfer: false,
                     isTran: detail.token_ids.length > 1,
                     sellingPrice: 0,
                     sell_timestamp: null,
