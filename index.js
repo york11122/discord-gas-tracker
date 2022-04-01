@@ -166,6 +166,12 @@ client.on('interactionCreate', async interaction => {
                     { channel: interaction.channel.id, userAddress, lastTranHash: "None", isProcess: false }
                 )
             }
+            if(trackUser){
+                await db.collection("nft-tracking-list").updateOne(
+                    {userAddress: userAddress},
+                    {$set:{ channel: interaction.channel.id }}
+                )
+            }
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setTitle('設定通知')
