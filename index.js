@@ -107,7 +107,7 @@ doTrack = async () => {
                             price:`${track.price}`, 
                             selling_price:`${track.type === "sell"?track.sellPrice.toFixed(2):"NA"}` ,
                             profit:`${track.type === "sell"?(track.sellPrice-track.price).toFixed(2):"NA"}` ,
-                            buying_price:`${track.type === "sell"?track.price.toFixed(2):"NA"}`,
+                            buying_price:`${track.type === "sell"?track.price.toFixed(2):`${track.price}`}`,
                             nft:`${track.nft}`,
                             buying_date:`${track.type === "sell"?track.transaction_date:"NA"}`,
                         }]);
