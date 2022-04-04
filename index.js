@@ -4,6 +4,13 @@ const axios = require('axios');
 const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES"] });
 const track = require('./a')
 const MongoClient = require("mongodb").MongoClient;
+const linebot = require('linebot');
+const lineMessage = require('./lineMessage')
+var bot = linebot({
+    channelId: process.env.channelId,
+    channelSecret: process.env.channelSecret,
+    channelAccessToken: process.env.channelAccessToken
+})
 
 const Mongoclient = new MongoClient(process.env.MONGO_URL, {
     useNewUrlParser: true,
@@ -94,6 +101,24 @@ doTrack = async () => {
 
                     const channel = client.channels.cache.get(trackRecord.channel);
                     channel.send({ embeds: [exampleEmbed] });
+                    if(trackRecord.channel === "959472591607853086"){
+                    const line_message = new lineMessage([
+                        {
+                            price:`${track.price}`, 
+                            selling_price:`${track.type === "sell"?track.sellPrice.toFixed(2):"NA"}` ,
+                            profit:`${track.type === "sell"?(track.sellPrice-track.price).toFixed(2):"NA"}` ,
+                            buying_price:`${track.type === "sell"?track.price.toFixed(2):"NA"}`,
+                            nft:`${track.nft}`,
+                            buying_date:`${track.type === "sell"?track.transaction_date:"NA"}`,
+                        }]);
+                    const message = line_message.getMessage(`${track.type} / ${track.userAddress.slice(-5)}`)
+                    bot.broadcast({
+                        type: "flex",
+                        altText: "this is a flex message",
+                        contents: message,
+                    })
+                }
+                        
                 }
             }
         }
