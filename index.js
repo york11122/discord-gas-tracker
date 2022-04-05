@@ -109,7 +109,7 @@ doTrack = async () => {
                             profit:`${track.type === "sell"?(track.sellPrice-track.price).toFixed(2):"NA"}` ,
                             buying_price:`${track.type === "sell"?track.price.toFixed(2):`${track.price}`}`,
                             nft:`${track.nft}`,
-                            buying_date:`${track.type === "sell"?track.transaction_date:"NA"}`,
+                            buying_date:`${track.transaction_date}`,
                         }]);
                     const message = line_message.getMessage(`${track.type} / ${track.userAddress.slice(-5)}`)
                     bot.broadcast({
