@@ -58,6 +58,7 @@ const main = async () => {
     let trackingList = await db.collection("nft-tracking-list").find({isProcess:false}).toArray()
     for (let trackRecord of trackingList) {
         const [cursor, trackData] = await track.trackUser(trackRecord, "both", 500, db, null, apiKey);
+        await track.trackUser(trackRecord, "both", 500, db, cursor, apiKey);
         await db.collection("nft-tracking-list").updateOne({ userAddress: trackRecord.userAddress }, { $set: { isProcess: true } })
     }
    

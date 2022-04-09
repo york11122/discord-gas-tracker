@@ -91,34 +91,34 @@ doTrack = async () => {
 
                     if (track.type === "sell") {
 
-                        exampleEmbed.addField('Profit', `${(track.sellPrice-track.price).toFixed(2)}`, true)
+                        exampleEmbed.addField('Profit', `${(track.sellPrice - track.price).toFixed(2)}`, true)
                         exampleEmbed.addField('Buying Price', `${track.price.toFixed(2)}`, true)
                         exampleEmbed.addField('Selling Price', `${track.sellPrice.toFixed(2)}`, true)
                         exampleEmbed.addField('Buying Date', `${track.transaction_date}`, true)
                         exampleEmbed.setTimestamp(Date.parse(track.sell_date))
-                        
+
                     }
 
                     const channel = client.channels.cache.get(trackRecord.channel);
                     channel.send({ embeds: [exampleEmbed] });
-                    if(trackRecord.channel === "959472591607853086"){
-                    const line_message = new lineMessage([
-                        {
-                            price:`${track.price}`, 
-                            selling_price:`${track.type === "sell"?track.sellPrice.toFixed(2):"NA"}` ,
-                            profit:`${track.type === "sell"?(track.sellPrice-track.price).toFixed(2):"NA"}` ,
-                            buying_price:`${track.type === "sell"?track.price.toFixed(2):`${track.price}`}`,
-                            nft:`${track.nft}`,
-                            buying_date:`${track.transaction_date}`,
-                        }]);
-                    const message = line_message.getMessage(`${track.type} / ${track.userAddress.slice(-5)}`)
-                    bot.broadcast({
-                        type: "flex",
-                        altText: "this is a flex message",
-                        contents: message,
-                    })
-                }
-                        
+                    if (trackRecord.channel === "959472591607853086") {
+                        const line_message = new lineMessage([
+                            {
+                                price: `${track.price}`,
+                                selling_price: `${track.type === "sell" ? track.sellPrice.toFixed(2) : "NA"}`,
+                                profit: `${track.type === "sell" ? (track.sellPrice - track.price).toFixed(2) : "NA"}`,
+                                buying_price: `${track.type === "sell" ? track.price.toFixed(2) : `${track.price}`}`,
+                                nft: `${track.nft}`,
+                                buying_date: `${track.transaction_date}`,
+                            }]);
+                        const message = line_message.getMessage(`${track.type} / ${track.userAddress.slice(-5)}`)
+                        bot.broadcast({
+                            type: "flex",
+                            altText: "this is a flex message",
+                            contents: message,
+                        })
+                    }
+
                 }
             }
         }
@@ -191,10 +191,10 @@ client.on('interactionCreate', async interaction => {
                     { channel: interaction.channel.id, userAddress, lastTranHash: "None", isProcess: false }
                 )
             }
-            if(trackUser){
+            if (trackUser) {
                 await db.collection("nft-tracking-list").updateOne(
-                    {userAddress: userAddress},
-                    {$set:{ channel: interaction.channel.id }}
+                    { userAddress: userAddress },
+                    { $set: { channel: interaction.channel.id } }
                 )
             }
             const embed = new MessageEmbed()
@@ -207,7 +207,7 @@ client.on('interactionCreate', async interaction => {
         if (interaction.isCommand() && interaction.commandName === 'get_nfts') {
             const userAddress = interaction.options.getString('address');
             await interaction.deferReply();
-    
+
             const nfts = await db.collection("tracking-user-nft-owned").find({
                 userAddress: { $regex: new RegExp(userAddress, "i") },
             }).sort({ buy_block_number: -1 }).limit(50).toArray();
@@ -233,12 +233,12 @@ client.on('interactionCreate', async interaction => {
                     }
                 }
 
-                if(nft.isTransfer){
-                nftsString = nftsString + "\n" + `[${nft.buy_timestamp.split('T')[0]}](${nft.nft_url} '${nft.nft_url}') Transfer`
-                    
+                if (nft.isTransfer) {
+                    nftsString = nftsString + "\n" + `[${nft.buy_timestamp.split('T')[0]}](${nft.nft_url} '${nft.nft_url}') Transfer`
+
                 }
-                else{
-                nftsString = nftsString + "\n" + `[${nft.buy_timestamp.split('T')[0]}](${nft.nft_url} '${nft.nft_url}') ${nft.isSold ? `(已賣出 ${nft.isTran ? "*" : ""} ${nft.sell_timestamp.split('T')[0]})  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : `(未賣出 Unsold roi: ${unsold_roi ? unsold_roi : ""} / FloorPrice: ${unsold_roi ? floor_price : "NA"})`}`
+                else {
+                    nftsString = nftsString + "\n" + `[${nft.buy_timestamp.split('T')[0]}](${nft.nft_url} '${nft.nft_url}') ${nft.isSold ? `(已賣出 ${nft.isTran ? "*" : ""} ${nft.sell_timestamp.split('T')[0]})  roi: ${nft.roi.toFixed(2)} ${nft.isWin ? "Win" : ""}` : `(未賣出 Unsold roi: ${unsold_roi ? unsold_roi : ""} / FloorPrice: ${unsold_roi ? floor_price : "NA"})`}`
                 }
 
                 if ((i + 1) % 5 === 0 || (i + 1) >= nfts.length) {
@@ -278,11 +278,11 @@ client.on('interactionCreate', async interaction => {
             let overall_sum = 0;
 
             for (let nft of nfts) {
-                if(nft.isTransfer) continue
+                if (nft.isTransfer) continue
                 if (nft.isSold) {
                     overall_count = overall_count + 1;
                     overall_sum = overall_sum + nft.roi
-                   
+
                 }
                 if (nft.isSold) {
                     if (nft.isWin) {
@@ -314,8 +314,8 @@ client.on('interactionCreate', async interaction => {
             const sell = _.filter(nfts, { isSold: true })
             const orders_sell = _.orderBy(sell, ['sell_timestamp'], ['desc'])
             let latestSell = null;
-            for(let i of  orders_sell){
-                if(i.isTransfer !== true){
+            for (let i of orders_sell) {
+                if (i.isTransfer !== true) {
                     latestSell = i
                     break;
                 }
@@ -323,7 +323,7 @@ client.on('interactionCreate', async interaction => {
             const winRate = winTimes / sold_total;
             const unsold_winRate = unsold_winTimes / unsold_total;
             const overall_roi = overall_sum / overall_count;
-            console.log("***************", overall_sum,overall_count )
+            console.log("***************", overall_sum, overall_count)
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setTitle(`${userAddress}`)
@@ -367,7 +367,7 @@ client.on('interactionCreate', async interaction => {
                     userAddress: { $regex: new RegExp(track.userAddress, "i") },
                 }).toArray();
                 for (let nft of nfts) {
-                    if(nft.isTransfer) continue
+                    if (nft.isTransfer) continue
                     if (nft.isSold) {
                         if (nft.isWin) {
                             winTimes = winTimes + 1;
@@ -382,15 +382,27 @@ client.on('interactionCreate', async interaction => {
             }
             const ordered = _.orderBy(temp, ['winRate'], ['desc'])
 
-            for (let i of ordered) {
+            for (let [index, i] of ordered.entries()) {
                 trackListString = trackListString + "\n" + i.winRate.toFixed(2) + " / " + i.userAddress;
+                if ((index + 1) % 5 === 0 || (index + 1) >= ordered.length) {
+                    const embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setTitle('目前追蹤用戶')
+                        .setDescription(`${trackListString}`);
+                    interaction.channel.send({ embeds: [embed] });
+                    trackListString = '';
+                }
+
             }
 
-            const embed = new MessageEmbed()
-                .setColor('#0099ff')
-                .setTitle('目前追蹤用戶')
-                .setDescription(` ${trackListString}`);
-            interaction.editReply({ embeds: [embed] });
+            // const embed = new MessageEmbed()
+            //     .setColor('#0099ff')
+            //     .setTitle('目前追蹤用戶')
+            //     .setDescription(` ${trackListString}`);
+
+
+
+            interaction.editReply("123");
         }
     } catch (err) {
         console.log(err.message);
