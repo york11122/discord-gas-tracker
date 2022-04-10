@@ -32,7 +32,7 @@ getNftTrade = async (token_address, block_number, transaction_hash, apiKey) => {
     let data;
     await sleep(200);
     try {
-        const res = await axios.get(`https://deep-index.moralis.io/api/v2/nft/${token_address}/trades?chain=eth&format=decimal&from_block=${block_number}`, {
+        const res = await axios.get(`https://deep-index.moralis.io/api/v2/nft/${token_address}/trades?chain=eth&format=decimal&to_block=${block_number}`, {
             headers: {
                 "X-API-Key": apiKey,
             }
@@ -65,23 +65,23 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
             ]
         ).toArray()
         const min_data = _.find(res, { _id: trackRecord.userAddress })
-        if (!min_data) { return [null,[]]; }
+        if (!min_data) { return [null, []]; }
         min_time_block = _.find(res, { _id: trackRecord.userAddress }).min
     }
 
     const data = await getAccountTransfer(trackRecord.userAddress, limit, direction, cursor, apiKey);
     const source = data.result;
     const processData = []
-    for(let item of source){
+    for (let item of source) {
         if (item.transaction_hash === trackRecord.lastTranHash) {
             break;
         }
         processData.push(item)
     }
-    const resultData =  _.orderBy(processData,['block_number'],['asc']);
+    const resultData = _.orderBy(processData, ['block_number'], ['asc']);
     console.log(resultData.length)
     if (resultData.length === 0) {
-        return [null,[]];
+        return [null, []];
     }
     const lastData = _.findLast(resultData)
     const lastTranHash = lastData.transaction_hash
@@ -92,7 +92,7 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
             console.log(item.block_timestamp)
             //stop tracking selling data when selling data is older than buying data
 
-            if(item.token_address === "0x87e738a3d5e5345d6212d8982205a564289e6324" && item.token_id === "3969"){
+            if (item.token_address === "0x87e738a3d5e5345d6212d8982205a564289e6324" && item.token_id === "3969") {
                 console.log(item)
             }
             if (direction === "from") {
@@ -194,7 +194,7 @@ const trackUser = async (trackRecord, direction, limit, db, cursor, apiKey) => {
                             userAddress: trackRecord.userAddress,
                             token_address: item.token_address,
                             token_id: item.token_id,
-                        }, { $set: { isSold:true, isTransfer: true } })
+                        }, { $set: { isSold: true, isTransfer: true } })
 
                         // await db.collection("tracking-user-nft-owned").deleteOne({
                         //     userAddress: trackRecord.userAddress,

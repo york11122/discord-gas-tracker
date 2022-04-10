@@ -50,18 +50,17 @@ doTrack = async () => {
 const main = async () => {
     mongo = await Mongoclient.connect();
     db = mongo.db("discord-bot");
-     //db.collection("tracking-user-nft-owned").deleteMany({userAddress:'0xed36b5f1b25a05f81034679ac1f1adc3c3cf7240'})
-   // db.collection("nft-tracking-list").updateMany({}, { $set: { isProcess:false,lastTranHash: '123' } })
+    //db.collection("tracking-user-nft-owned").deleteMany({userAddress:'0xed36b5f1b25a05f81034679ac1f1adc3c3cf7240'})
+    // db.collection("nft-tracking-list").updateMany({}, { $set: { isProcess:false,lastTranHash: '123' } })
     //  const trackingList = [{ "_id": { "$oid": "62051f2213caed00c47fe975" }, "channel": "939723013266481223", "userAddress": "0xed36b5f1b25a05f81034679ac1f1adc3c3cf7240", "lastTranHash": "123" }]
-    
-    
-    let trackingList = await db.collection("nft-tracking-list").find({isProcess:false}).toArray()
+
+
+    let trackingList = await db.collection("nft-tracking-list").find({ isProcess: false }).toArray()
     for (let trackRecord of trackingList) {
         const [cursor, trackData] = await track.trackUser(trackRecord, "both", 500, db, null, apiKey);
-        await track.trackUser(trackRecord, "both", 500, db, cursor, apiKey);
         await db.collection("nft-tracking-list").updateOne({ userAddress: trackRecord.userAddress }, { $set: { isProcess: true } })
     }
-   
+
 
     // let trackingList = await db.collection("nft-tracking-list").find({ isProcess: false }).toArray()
     // if (trackingList) {
