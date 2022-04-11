@@ -24,7 +24,7 @@ getAccountTransfer = async (accountAddress, limit, direction, cursor, apiKey) =>
         return res.data
     }
     catch (err) {
-        console.log(err.message)
+        console.log(err)
     }
 }
 
@@ -43,7 +43,7 @@ getNftTrade = async (token_address, block_number, transaction_hash, apiKey) => {
         return detail ? detail : null
     }
     catch (err) {
-        console.log(err.message)
+        console.log(err)
     }
 }
 
@@ -231,7 +231,7 @@ const getFloorPrice = async (contract_address) => {
         await sleep(200);
         return response.data.price ? response.data.price / 1000000000000000000 : -1;
     } catch (err) {
-        console.log(contract_address)
+        console.log(err)
         return -1;
     }
 }
