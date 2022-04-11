@@ -67,7 +67,7 @@ getFloorPrice = async (contract_address) => {
         return -1;
     }
 }
-const apiKey = "vKi6zzRfweVu3mmBZtbQLzGoVGH8QTt2ay2c7s3eYa2nFxDqVcHJSK2TjagFAiDX";
+const apiKey = process.env.api_key;
 
 doTrack = async () => {
     try {
