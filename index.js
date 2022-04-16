@@ -112,11 +112,12 @@ doTrack = async () => {
                                 buying_date: `${track.transaction_date}`,
                             }]);
                         const message = line_message.getMessage(`${track.type} / ${track.userAddress.slice(-5)}`)
-                        bot.broadcast({
+                        bot.push("C4dfe89cebc032ae6ca06d78a224dddfe", {
                             type: "flex",
                             altText: "this is a flex message",
                             contents: message,
                         })
+
                     }
 
                 }
