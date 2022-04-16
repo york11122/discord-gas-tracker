@@ -10,6 +10,7 @@ function sleep(ms) {
 
 
 getAccountTransfer = async (accountAddress, limit, direction, cursor, apiKey) => {
+    await sleep(1000);
     try {
         let url = `https://deep-index.moralis.io/api/v2/${accountAddress}/nft/transfers?chain=eth&format=decimal&limit=${limit}&direction=${direction}`;
         if (cursor) {
