@@ -30,7 +30,7 @@ getAccountTransfer = async (accountAddress, limit, direction, cursor, apiKey) =>
 
 getNftTrade = async (token_address, block_number, transaction_hash, apiKey) => {
     let data;
-    await sleep(200);
+    await sleep(1000);
     try {
         const res = await axios.get(`https://deep-index.moralis.io/api/v2/nft/${token_address}/trades?chain=eth&format=decimal&to_block=${block_number}`, {
             headers: {
@@ -228,7 +228,7 @@ const getFloorPrice = async (contract_address) => {
                 "X-API-Key": process.env.api_key,
             }
         });
-        await sleep(200);
+        await sleep(1000);
         return response.data.price ? response.data.price / 1000000000000000000 : -1;
     } catch (err) {
         console.log(err)
